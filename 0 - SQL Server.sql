@@ -43,8 +43,6 @@
 	set dateformat dmy
 */
 
-
-
 -- IF OBJECT_ID -> Sirve para verificar si la tabla que vamos a crear existe o no existe
 if object_id('peliculas') is not null
 	drop table peliculas;
