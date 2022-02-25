@@ -431,11 +431,80 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	Usamos 2 campos como clave, la patente junto con la hora de llegada, asi identificamos univocamente cada registro
 */
 
-/*
------------------------------------------- INTEGRIDAD DE LOS DATOS ------------------------------------------
+/*------------------------------------------ INTEGRIDAD DE LOS DATOS ------------------------------------------
 -------------- 1. RESTRICCIONES (CONSTRAINTS) --------------
 	Las restricciones (constraints) son un metodo para mantener la integridad de los datos, asegurando que los valores ingresados sean validos 
 	y que las relaciones entre las tablas se mantenga. Se establecen a los campos y las tablas
 	Pueden definirse al crear la tabla ("create table") o agregarse a una tabla existente (empleando "alter table") y se pueden aplicar a un campo o a varios
+	El procedimiento almacenado del sistema "sp_helpconstraint" junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
+	Hay varios tipos de restricciones:
+
+-------------- 2. RESTRICCION (DEFAULT) --------------
+	La restriccion "default" especifica un valor por defecto para un campo cuando no se inserta explicitamente en un comando "insert"
+	Anteriormente, para establecer un valor por defecto para un campo empleabamos la clausula "default" al crear la tabla:
+		ejem: create table libros(...autor varchar(30) default 'Desconocido', ...);
+		Dicha restriccion, a la cual no le dabamos un nombre, recibia un nombre dado por SQL Server que consiste "DF" (por default), 
+		seguido del nombre de la tabla, el nombre del campo y letras y numeros aleatorios
+		Podemos agregar una restriccion "default" a una tabla existente con la sintaxis basica siguiente:
+			alter table NOMBRETABLA add constraint NOMBRECONSTRAINT default VALORPORDEFECTO for CAMPO;
+			Cuando demos el nombre a las restricciones "default" formato similar al que le da SQL Server: "DF_NOMBRETABLA_NOMBRECAMPO"
+		La restriccion "default" acepta valores tomados de funciones del sistema, por ejemplo:
+		Podemos establecer que el valor por defecto de un campo de tipo datetime sea "getdate()".
+
+		Podemos ver informacion referente a las restriciones de una tabla con el procedimiento almacenado "sp_helpcontraint":
+			exec sp_helpconstraint libros;
+			Aparecen varias columnas con la siguiente informacion:
+				- constraint_type: el tipo de restriccion y sobre que campo esta establecida (DEFAULT on column autor)
+				- constraint_name: el nombre de la restriccion (DF_libros_autor)
+				- delete_action y update_action: no tienen valores para este tipo de restriccion
+				- status_enabled y status_for_replication: no tienen valores para este tipo de restriccion
+				- constraint_keys: el valor por defecto (Desconocido)
+
+
 */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------ PROCEDIMIENTOS ALMACENADOS ------------------------------------------
+	exec sp_helpconstraint tabla -> junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
+	exec sp_columns tabla -> Nos muestra el detalle de la estructura de la tabla
+	exec sp_tables BD -> 
+
+
+*/
