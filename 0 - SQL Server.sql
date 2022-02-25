@@ -275,6 +275,12 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		ejem: select month(getdate());
 	YEAR(fecha): retorna el anio de la fecha especificada. 
 		ejem: select year(getdate());
+
+-------------- 4. FUNCIONES DE AGRUPAMIENTO (COUNT - SUM - MIN - MAX - AVG) --------------
+	El tipo de dato del campo determina las funciones que se pueden emplear con ellas
+	COUNT(campo): se puede emplear con cualquier tipo de dato
+	MIN(campo) - MAX(campo): con cualquier tipo de dato, retorna el valor maximo o minimo de un campo
+	SUM(campo) y AVG(campo): solo en campos de tipo numerico, retorna la suma o el valor promedio de los valores que contiene el campo especificado
 */
 
 -- ORDER BY --> Podemos ordenar el resultado de un "select" para que los registros se muestren ordenados por algun campo
@@ -317,5 +323,9 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			ejem5: select titulo,editorial from libros where editoriallike 'A[nm]%'--> Consulta cadenas que comiencen con 'An' o 'Am'
 		[^] --> reemplaza cualquier caracter NO presente en el conjunto especificado dentro de los corchetes
 			select titulo,autor,editorial from libros where editorial like '[^PN]%' --> Consulta los libros cuya editorial NO comienza con las letras "P" ni "N"
-
 */
+-- COUNT COUNT_BIG -> La funcion "count()" cuenta la cantidad de registros de una tabla, incluyendo los que tienen valor nulo
+-- GROUP BY  -> agrupa registros para consultas detalladas
+-- HAVING -> 
+
+
