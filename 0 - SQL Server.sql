@@ -1,6 +1,6 @@
 
-/*-------------- TIPOS DE DATOS --------------
-------- 1. TEXTO -------
+/*------------------------------------------ TIPOS DE DATOS ------------------------------------------
+-------------- 1. TEXTO --------------
 	VARCHAR(X) -> Permite caracteres de 1 a 8000
 	CHAR(X) -> Permite caracteres de 1 a 8000, se usa especialmente en valores que no son cambiantes, por ejemplo campo sexo "M-F"
 	TEXT -> permite caracteres hasta de 2mil millones
@@ -8,7 +8,7 @@
 	NCHAR(X) -> es similar a "char" excpeto que acepta caracteres Unicode, su rango va de 0 a 4000 caracteres porque se emplean 2 bytes por cada caracter.
 	NTEXT -> es similar a "text" excepto que permite almacenar caracteres Unicode, puede contener hasta 1000000000 caracteres. No admite argumento para especificar su longitud.		
 
-------- 2. NUMERICOS -------
+-------------- 2. NUMERICOS --------------
 	VALORES ENTEROS
 	INT / INTEGER -> su rango es de -2.000.000.000 a 2.000.000.000
 	SMALLINT -> Puede contener hasta 5 digitos. Su rango va desde -32000 hasta 32000 aprox
@@ -26,7 +26,7 @@
 	MONEY -> Puede tener hasta 19 digitos y solo 4 de ellos puede ir luego del separador decimal; entre -900000000000000.5808 aprox y 900000000000000.5807
 	SMALLMONEY -> Entre -200000.3648 y 200000.3647 aprox
 
-------- 3. FECHA Y HORA -------
+-------------- 3. FECHA Y HORA --------------
 	DATETIME -> puede almacenar valores desde 01 de enero de 1753 hasta 31 de diciembre de 9999
 	SMALLDATETIEM -> el rango va de 01 de enero de 1900 hasta 06 de junio de 2079
 
@@ -139,10 +139,10 @@ INSERT INTO peliculas (OID, nombre, actor, duracion, cantidad, precios) VALUES (
 DELETE FROM peliculas WHERE OID = 12
 SET IDENTITY_INSERT peliculas OFF --> DESACTIVAMOS EL COMANDO IDENTITY_INSERT
 
---TRUNCATE TABLE Vacia toda la tabla y adicional reinicia el conteo autoincrement
+-- TRUNCATE TABLE Vacia toda la tabla y adicional reinicia el conteo autoincrement
 TRUNCATE TABLE peliculas;
 
---DATE TIPO DE DATOS DATETIME
+-- DATE TIPO DE DATOS DATETIME
 if object_id('empleados') is not null
   drop table empleados;
 
@@ -164,7 +164,7 @@ select * from empleados where fechaingreso < '01-01-1985';
 update empleados set nombre='Maria Carla Juarez' where fechaingreso = '20.5.83';
 delete from empleados where fechaingreso <> '20/05/1983';
 
---VALORES DEFAULT
+-- VALORES DEFAULT
 if object_id('empleados') is not null
   drop table empleados;
 
@@ -184,13 +184,13 @@ insert into empleados (nombre, documento, fechaingreso)values('Daniel Lopez','25
 select * from empleados;
 
 
-/*-------------- FUNCIONES --------------
+/*------------------------------------------ FUNCIONES ------------------------------------------
 Una funcion es un conjunto de sentencias que operan como una unidad logica.
 Una funcion tiene un nombre, retorna un parametro de salida y opcionalmente acepta parametros de entrada. 
 Las funciones de SQL Server no pueden ser modificadas, las funciones definidas por el usuario si.
 SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 
-------- 1 . FUNCIONES PARA MANEJO DE CARACTERES -------
+-------------- 1 . FUNCIONES PARA MANEJO DE CARACTERES --------------
 	SUBSTRING(cadena,inicio,longitud) --> Devuelve una parte de la cadena especificada, empezando desde el inicio y termina con la longitud estipulada
 		ejem: select substring('Buenas tardes',8,6); --> retorna "tardes" --> Dado que empieza en la posicion 8 que es "T" y termina con la longitud que son 6.
 	STR(numero,longitud,cantidaddecimales) --> Convierte un numero a caracteres
@@ -226,7 +226,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	SPACE(cantidad) --> retorna una cadena de espacios de longitud indicada por cantidad
 		ejem: select 'Hola'+space(1)+'que tal'; --> retorna "Hola que tal"
 
-------- 2. FUNCIONES MATEMATICAS -------
+-------------- 2. FUNCIONES MATEMATICAS --------------
 	ABS(x): retorna el valor absoluto del argumento "x"
 		ejem: select abs(-20); --> retorna 20
 	CEILING(x): redondea hacia arriba el argumento "x"
@@ -248,7 +248,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	SRQT(x): devuelve la raiz cuadrada del valor enviado como argumento
 		ejem: select srqt(49);
 
-------- 3. FUNCIONES PARA FECHAS Y HORAS -------
+-------------- 3. FUNCIONES PARA FECHAS Y HORAS --------------
 	GETDATE(): retorna la fecha y hora actuales
 		ejem: select getdate();
 	DATEPART(partedefecha,fecha): retorna la parte especifica de una fecha, el anio, trimestre, dia, hora, etc
@@ -275,6 +275,16 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		ejem: select month(getdate());
 	YEAR(fecha): retorna el anio de la fecha especificada. 
 		ejem: select year(getdate());
-	
+*/
 
+-- ORDER BY --> Podemos ordenar el resultado de un "select" para que los registros se muestren ordenados por algun campo
+/*-- ORDENADORES LOGICOS ( AND - OR - NOT)
+	AND, significa "y"
+		ejem: select * from libros where (autor='Borges') and (precio<=20); --> Calculamos los libros cuyo autor sea igual a "Borges" y cuyo precio no supere los 20
+	OR, significa "y/o",
+		ejem: select * from libros where autor='Borges' or editorial='Planeta'; --> Calculamos los libros cuyo autor sea "Borges" y/o cuya editorial sea "Planeta"
+	NOT, significa "no", invierte el resultado
+		ejem: select * from libros where not editorial='Planeta'; --> Calculamos los libros que NO cumplan la condicion, aquellos cuya editorial NO sea "Planeta"
+	(), parentesis agrupa las condiciones que se quieren usar
+		ejem: select * from libros where (autor='Borges') or (editorial='Paidos' and precio<20);
 */
