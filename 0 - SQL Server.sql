@@ -229,6 +229,52 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 ------- 2. FUNCIONES MATEMATICAS -------
 	ABS(x): retorna el valor absoluto del argumento "x"
 		ejem: select abs(-20); --> retorna 20
+	CEILING(x): redondea hacia arriba el argumento "x"
+		ejem: select ceiling(12.34); --> retorna 13
+	FLOOR(x): redondea hacia abajo el argumento "x"
+		ejem: select floor(12.34); --> retorna 12
+	%: devuelve el resto de una division
+		ejem: select 10%3; --> retorna 1
+	POWER(x,y): retorna el valor de "x" elevado a la "y" potencia
+		ejem: select power(2,3); --> retorna 8
+	ROUND(numero,longitud): retorna un numero redondeado a la longitud especificada
+		ejem1: select round(123.456,1); --> retorna "123.400", es decir, redondea desde el primer decimal
+		ejem2: select round(123.456,2); --> retorna "123.460", es decir, redondea desde el segundo decimal
+		ejem3: select round(123.456,-1); --> retorna "120.000", es decir, redondea desde el primer valor entero (hacia la izquierda)
+	SIGN(x): si el argumento es un valor positivo devuelve 1;-1 si es negativo y si es 0, 0
+		ejem: select sign(5); --> retorna 1, dado que el numero es positivo
+	SQUARE(x): retorna el cuadrado del argumento
+		ejem: select square(3); retorna 9
+	SRQT(x): devuelve la raiz cuadrada del valor enviado como argumento
+		ejem: select srqt(49);
+
+------- 3. FUNCIONES PARA FECHAS Y HORAS -------
+	GETDATE(): retorna la fecha y hora actuales
+		ejem: select getdate();
+	DATEPART(partedefecha,fecha): retorna la parte especifica de una fecha, el anio, trimestre, dia, hora, etc
+								  Los valores para "partedefecha" pueden ser: year (anio), quarter (cuarto), 
+								  month (mes), day (dia), week (semana), hour (hora), minute (minuto), second (segundo) y millisecond (milisegundo)
+		ejem1: select datepart(month,getdate()); --> retorna el numero de mes actual
+		ejem2: select datepart(day,getdate()); --> retorna el dia actual
+		ejem3: select datepart(hour,getdate()); --> retorna la hora actual
+	DATENAME(partedefecha,fecha): retorna el nombre de una parte especifica de una fecha
+		ejem1: select datename(month,getdate()); --> retorna el nombre del mes actual
+		ejem2: select datename(day,getdate()); --> retorna el nombre del dia actual
+	DATEADD(partedelafecha,numero,fecha): agrega un intervalo a la fecha especificada, es decir, retorna una fecha adicionando a la fecha enviada como tercer argumento
+		ejem1: select dateadd(day,3,'1980/11/02'); --> retorna "1980/11/05", agrega 3 dias
+		ejem2: select dateadd(month,3,'1980/11/02'); --> retorna "1981/02/02", agrega 3 meses
+		ejem3: select dateadd(hour,2,'1980/11/02'); --> retorna "1980/02/02 2:00:00", agrega 2 horas
+	DATEDIFF(partedelafecha,fecha1,fecha2): calcula el intervalo de tiempo (segun el primer argumento) entre las 2 fechas
+		ejem1: select datediff (day,'2005/10/28','2006/10/28'); --> retorna 365 (dias)
+		ejem2: select datediff(month,'2005/10/28','2006/11/29'); --> retorna 13 (meses)
+		ejem3: select titulo, datediff(year,edicion,getdate()) from libros; --> Mostramos el titulo del libro y los anios que tienen de editados
+		ejem4: select titulo from libros where datepart(day,edicion)=9 --> Muestre los titulos de los libros que se editaron el dia 9, de cualquier mes de cualquier anio
+	DAY(fecha): retorna el dia de la fecha especificada
+		ejem: select day(getdate()); 
+	MONTH(fecha): retorna el mes de la fecha especificada. 
+		ejem: select month(getdate());
+	YEAR(fecha): retorna el anio de la fecha especificada. 
+		ejem: select year(getdate());
 	
 
 */
