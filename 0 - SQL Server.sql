@@ -278,7 +278,8 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 */
 
 -- ORDER BY --> Podemos ordenar el resultado de un "select" para que los registros se muestren ordenados por algun campo
-/*-- ORDENADORES LOGICOS ( AND - OR - NOT)
+/*
+-- ORDENADORES LOGICOS ( AND - OR - NOT)
 	AND, significa "y"
 		ejem: select * from libros where (autor='Borges') and (precio<=20); --> Calculamos los libros cuyo autor sea igual a "Borges" y cuyo precio no supere los 20
 	OR, significa "y/o",
@@ -287,4 +288,15 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		ejem: select * from libros where not editorial='Planeta'; --> Calculamos los libros que NO cumplan la condicion, aquellos cuya editorial NO sea "Planeta"
 	(), parentesis agrupa las condiciones que se quieren usar
 		ejem: select * from libros where (autor='Borges') or (editorial='Paidos' and precio<20);
+*/
+/*
+-- OPERADORES RELACIONALES (IS NULL - BETWEEN - IN)
+	IS NULL --> Se emplea el operador "is null" para consultar los registros en los cuales este almacenado el valor "null"
+		ejem: select * from libros where editorial is null
+	BETWEEN --> Este operador se puede emplear con tipos de datos (numericos y money) y (fecha y hora)
+		ejem1: select * from libros where precio between 20 and 40 --> Consultamos los libros con precio mayor o igual a 20 y menor o igual a 40
+		ejem2: select *from libros where precio not between 20 and 35 --> Consultamos los libros cuyo precio NO se este entre 20 y 35, es decir, los menores a 15 y mayores a 25
+	IN --> Se utiliza "in" para averiguar si el valor de un campo esta incluido en una lista de valores especificada
+		ejem guia: select *from libros where autor='Borges' or autor='Paenza';
+		ejem: select * from libros where autor in('Borges','Paenza')
 */
