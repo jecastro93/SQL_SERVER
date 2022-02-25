@@ -300,3 +300,22 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		ejem guia: select *from libros where autor='Borges' or autor='Paenza';
 		ejem: select * from libros where autor in('Borges','Paenza')
 */
+/*
+-- BUSQUEDA LIKE Y NOT LIKE
+	Se usa para realizar comparaciones exclusivamente de cadenas y utiliza varios comodines
+		% --> El simbolo "%" (porcentaje) reemplaza cualquier cantidad de caracteres
+			ejem1: select * from libros where autor like "%Borges%" --> Consulta todos los libros que contengan en autor el apellido BORGES
+			ejem2: select * from libros where titulo like 'M%' --> Consulta todos los libros que comiencen con "M"
+			ejem3: select titulo,precio from libros where precio like '1_.%' --> Consulta los libros cuyo precio se encuentre entre 10.00 y 19.99
+		_ --> el guion bajo "_" reemplaza un caracters
+			ejem: select * from libros where autor like '%Carrol_' --> Consulta los libros de "Lewis Carroll" pero no recordamos si se escribe "Carroll" o "Carrolt"
+		[] --> reemplaza cualquier caracter contenido en el conjunto especificado dentro de los corchetes
+			ejem1: select titulo,editorial from libros where editorial like '[P-S]%' --> Consulta los libros cuya editorial comienza con las letras entre la "P" y la "S"
+			ejem2: select titulo,editorial from libros where editoriallike '[a-cf-i]%'--> Consulta cadenas que comiencen con a,b,c,f,g,h o i;
+			ejem3: select titulo,editorial from libros where editoriallike '[-acfi]%'--> Consulta cadenas que comiencen con -,a,c,f o i;
+			ejem4: select titulo,editorial from libros where editoriallike 'A[_]9%'--> Consulta cadenas que comiencen con 'A_9';
+			ejem5: select titulo,editorial from libros where editoriallike 'A[nm]%'--> Consulta cadenas que comiencen con 'An' o 'Am'
+		[^] --> reemplaza cualquier caracter NO presente en el conjunto especificado dentro de los corchetes
+			select titulo,autor,editorial from libros where editorial like '[^PN]%' --> Consulta los libros cuya editorial NO comienza con las letras "P" ni "N"
+
+*/
