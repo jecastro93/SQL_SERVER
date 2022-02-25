@@ -53,7 +53,7 @@ create table peliculas(
 	nombre varchar(50) NOT NULL,
 	actor varchar(50) NOT NULL,
 	duracion integer NOT NULL,
-	cantidad integer NOT NULL,
+	cantidad integer NULL,
 	precios float NULL
 );
 
@@ -69,6 +69,8 @@ INSERT INTO peliculas (nombre, actor, duracion, cantidad, precios) VALUES ('Misi
 INSERT INTO peliculas (nombre, actor, duracion, cantidad, precios) VALUES ('Mujer bonita', 'Julia Roberts', 118, 3, 95.50);
 INSERT INTO peliculas (nombre, actor, duracion, cantidad, precios) VALUES ('Elsa y Fred', 'China Zorrilla', 110, 2, 50);
 INSERT INTO peliculas (nombre, actor, duracion, cantidad, precios) VALUES ('Mision Imposible 1', 'Tom Cruise', 118, 3, 120.50);
+INSERT INTO peliculas VALUES ('Mision Imposible 1', 'Tom Cruise', 118, 3, 2000); --DE ESTA MANERA PODEMOS INSERTAR DATOS SIN NECESIDAD DE DECLARAR LOS CAMPOS
+INSERT INTO peliculas (nombre, actor, duracion) VALUES ('Mision Imposible 1', 'Tom Cruise', 2222); -- DE ESTA MANERA INSERTAMOS LOS DATOS QUE QUEREMOS
 
 -- CONSULTAR DATOS
 SELECT * FROM peliculas;
@@ -79,6 +81,10 @@ SELECT nombre, actor, cantidad FROM peliculas WHERE actor = 'Tom Cruise';
 SELECT * FROM peliculas WHERE duracion = 118;
 SELECT nombre, actor, cantidad FROM peliculas WHERE actor <> 'Tom Cruise';--> DIFERENTE <>
 SELECT nombre, actor, cantidad FROM peliculas WHERE precios >=120.5;--> MAYOR O MAYOR Y IGUAL >=
+SELECT nombre+'-'+actor FROM peliculas; --> USAMOS "+" PARA CONCATENAR DOS CAMPOS
+SELECT nombre, (cantidad*precios)  FROM peliculas --> USAMOS * PARA MULTIPLICAR CANTIDAD Y PRECIO 
+SELECT nombre, (cantidad*precios)  AS precio FROM peliculas --> USAMOS "AS" PARA PONER ALIAS AL RESULTADO
+SELECT nombre+'-'+actor AS 'nombre total' FROM peliculas;  --> USAMOS "AS" PARA PONER ALIAS AL RESULTADO Y "'" SE USA CUANDO EL ALIAS TIENE MAS DE UNA PALABRA
 
 -- ELIMINAR DATOS
 DELETE FROM peliculas; --> ELIMINA TODOS LOS REGISTROS
@@ -142,8 +148,9 @@ if object_id('empleados') is not null
 
 create table empleados(
   nombre varchar(20),
-  documento char(8),
+  documento varchar(20) DEFAULT 'Pendiente',
   fechaingreso datetime
+  cantidad integer DEFAULT 0
 );
 set dateformat dmy; --LE DAMOS FORMATO A LA FECHA
 
@@ -157,4 +164,71 @@ select * from empleados where fechaingreso < '01-01-1985';
 update empleados set nombre='Maria Carla Juarez' where fechaingreso = '20.5.83';
 delete from empleados where fechaingreso <> '20/05/1983';
 
+--VALORES DEFAULT
+if object_id('empleados') is not null
+  drop table empleados;
 
+create table empleados(
+  nombre varchar(20),
+  documento varchar(20) DEFAULT 'Pendiente', --AL NO INGRESAR VALORES LOS DEFAULT VAN A TENER UN VALOR POR DEFECTO
+  fechaingreso datetime,
+  cantidad integer NULL DEFAULT 0 --AL NO INGRESAR VALORES LOS DEFAULT VAN A TENER UN VALOR POR DEFECTO
+);
+set dateformat dmy;
+
+insert into empleados values('Ana Gomez','22222222','12-01-1980',2);
+insert into empleados values('Bernardo Huerta','23333333','15-03-81',3);
+insert into empleados (nombre, fechaingreso) values('Carla Juarez','20/05/1983');
+insert into empleados (nombre, documento, fechaingreso)values('Daniel Lopez','25555555','2.5.1990');
+
+select * from empleados;
+
+
+/*-------------- FUNCIONES --------------
+Una funcion es un conjunto de sentencias que operan como una unidad logica.
+Una funcion tiene un nombre, retorna un parametro de salida y opcionalmente acepta parametros de entrada. 
+Las funciones de SQL Server no pueden ser modificadas, las funciones definidas por el usuario si.
+SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
+
+------- 1 . FUNCIONES PARA MANEJO DE CARACTERES -------
+	SUBSTRING(cadena,inicio,longitud) --> Devuelve una parte de la cadena especificada, empezando desde el inicio y termina con la longitud estipulada
+		ejem: select substring('Buenas tardes',8,6); --> retorna "tardes" --> Dado que empieza en la posicion 8 que es "T" y termina con la longitud que son 6.
+	STR(numero,longitud,cantidaddecimales) --> Convierte un numero a caracteres
+		ejem: select str(123.456,7,2); --> retorna '123.46' --> Dado que el numero a convertir solo permite 2 decimales y su longitud es de 7.
+	STUFF(cadena1,inicio,cantidad,cadena2) --> inserta la cadena enviada como cuarto argumento, en la posicion indicada en el segundo argumento, reemplazando la cantidad de caracteres indicada por el tercer argumento
+		ejem: select stuff('abcde',3,2,'opqrs'); --> retorna "abopqrse". Es decir, coloca en la posicion 3 la cadena "opqrs" y reemplaza 2 caracteres de la primer cadena
+	LEN(cadena) --> retorna la longitud de la cadena, cantidad de caracteres
+		ejem: select len('Hola'); --> retorna 4
+	CHAR(x) --> retorna un caracter en codigo ASCII del entero enviado
+		ejem: select char(65); --> retorna A
+	LEFT(cadena,longitud): retorna la cantidad de caracteres de la cadena comenzando desde la izquierda
+		ejem: select left('buenos dias',8); --> retorna "buenos d"
+	RIGHT(cadena,longitud): retorna la cantidad de caracteres de la cadena comenzando desde la derecha
+		ejem: select right('buenos dias',8); --> retorna "nos dias
+	LOWER(cadena): retornan la cadena con todos los caracteres en minusculas
+		ejem: select lower('HOLA ESTUDIAnte'); --> retorna "hola estudiante"
+	UPPER(cadena): retornan la cadena con todos los caracteres en mayusculas
+		ejem: select upper('HOLA ESTUDIAnte'); --> retorna "HOLA ESTUDIANTE"
+	LTRIM(cadena): retorna la cadena con los espacios de la izquierda eliminados
+		ejem: select ltrim('     Hola     '); --> retorna "Hola     "
+	RTRIM(cadena): retorna la cadena con los espacios de la derecha eliminados
+		ejem: select rtrim('     Hola     '); --> retorna "     Hola"
+	REPLACE(cadena,cadenareemplazo,cadenareemplazar) --> reemplaza todas las cadenas definidas en el 3 parametro por la del 2 parametro
+		ejem: select replace('xxx.sqlserverya.com','x','w'); --> retorna "www.sqlserverya.com'
+	REVERSE(cadena)--> devuelve la cadena invirtiendo el order de los caracteres
+		ejem: select reverse('Hola'); --> retorna "aloH"
+	PATINDEX(patron,cadena) --> devuelve la posicion de comienzo del patron especificado.
+		ejem: select patindex('%Luis%', 'Jorge Luis Borges'); --> retorna 7
+	CHARINDEX(subcadena,cadena,inicio) --> devuelve la posicion donde comienza la subcadena en la cadena, comenzando la busqueda desde la posicion indicada por "inicio"
+		ejem: select charindex('or','Jorge Luis Borges',5); --> retorna 13
+	REPLICATE(cadena,cantidad) --> repite una cadena la cantidad de veces especificada
+		ejem: select replicate ('Hola ',3); --> retorna "HolaHolaHola"
+	SPACE(cantidad) --> retorna una cadena de espacios de longitud indicada por cantidad
+		ejem: select 'Hola'+space(1)+'que tal'; --> retorna "Hola que tal"
+
+------- 2. FUNCIONES MATEMATICAS -------
+	ABS(x): retorna el valor absoluto del argumento "x"
+		ejem: select abs(-20); --> retorna 20
+	
+
+*/
