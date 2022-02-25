@@ -448,6 +448,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Podemos agregar una restriccion "default" a una tabla existente con la sintaxis basica siguiente:
 			alter table NOMBRETABLA add constraint NOMBRECONSTRAINT default VALORPORDEFECTO for CAMPO;
 			Cuando demos el nombre a las restricciones "default" formato similar al que le da SQL Server: "DF_NOMBRETABLA_NOMBRECAMPO"
+		
 		La restriccion "default" acepta valores tomados de funciones del sistema, por ejemplo:
 		Podemos establecer que el valor por defecto de un campo de tipo datetime sea "getdate()".
 
@@ -460,7 +461,26 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				- status_enabled y status_for_replication: no tienen valores para este tipo de restriccion
 				- constraint_keys: el valor por defecto (Desconocido)
 
+-------------- 3. RESTRICCION (CHECK) --------------
+	La restriccion "check" especifica los valores que acepta un campo, evitando que se ingresen valores inapropiados
+	La sintaxis basica es la siguiente:
+		alter table NOMBRETABLA add constraint NOMBRECONSTRAINT check CONDICION
 
+		Trabajamos con la tabla "libros" de una libreria que tiene los siguientes campos: codigo, titulo, autor, editorial, preciomin, preciomay
+		Los campos de los precios (minorista y mayorista) se definen de tipo decimal(5,2), es decir, aceptan valores entre -999.99 y 999.99. 
+		Podemos controlar que no se ingresen valores negativos para dichos campos agregando una restriccion "check"
+			alter table libros add constraint CK_libros_precio_positivo check (preciomin>=0 and preciomay>=0)
+
+		La condicion puede hacer referencia a otros campos de la misma tabla. 
+		Por ejemplo, podemos controlar que el precio mayorista no sea mayor al precio minorista
+			alter table libros add constraint CK_libros_preciominmay check (preciomay<=preciomin)
+		
+		Las condiciones para restricciones "check" tambien pueden pueden incluir un patron o una lista de valores. 
+		Por ejemplo establecer que cierto campo conste de 4 caracteres, 2 letras y 2 digitos
+			alter table libros add constraint CK_libros_nombre check (CAMPO like '[A-Z][A-Z][0-9][0-9]');
+
+		O establecer que cierto campo asuma solo los valores que se listan
+			alter table libros add constraint CK_libros_dias check (CAMPO in ('lunes','miercoles','viernes'));
 */
 
 
