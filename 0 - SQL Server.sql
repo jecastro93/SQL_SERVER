@@ -324,8 +324,57 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		[^] --> reemplaza cualquier caracter NO presente en el conjunto especificado dentro de los corchetes
 			select titulo,autor,editorial from libros where editorial like '[^PN]%' --> Consulta los libros cuya editorial NO comienza con las letras "P" ni "N"
 */
--- COUNT COUNT_BIG -> La funcion "count()" cuenta la cantidad de registros de una tabla, incluyendo los que tienen valor nulo
--- GROUP BY  -> agrupa registros para consultas detalladas
--- HAVING -> 
+-- COUNT/COUNT_BIG -> La funcion "count()" cuenta la cantidad de registros de una tabla, incluyendo los que tienen valor nulo
+/*
+-- GROUP BY/GROUP BY ALL  -> Agrupa registros para consultas detalladas
+		Note que las editoriales que no tienen libros que cumplan la condicion, no aparecen en la salida. 
+		Para que aparezcan todos los valores de editorial, incluso los que devuelven cero o "null" en la columna de agregado, 
+		debemos emplear la palabra clave "all" al lado de "group by"
+		ejem1: select editorial, count(*) from libros where precio<30 group by editorial;
+		ejem2: select editorial, count(*) from libros where precio<30 group by all editorial;
+ 
+-- HAVING -> Permite seleccionar (o rechazar) un grupo de registros
+		ejem1: select editorial, count(*) from libros group by editorial -> Cantidad de libros agrupados por editorial
+		ejem2: select editorial, count(*) from libros group by editorial having count(*)>2 -> Cantidad de libros agrupados por editorial y que devuelvan un valor mayor a 2
+
+		Ambas devuelven el mismo resultado, pero son diferentes
+		La primera, selecciona todos los registros rechazando los de editorial "Planeta" y luego los agrupa para contarlos
+			ejem3 where: select editorial, count(*) from libros where editorial<>'Planeta' group by editorial;
+		La segunda, selecciona todos los registros, los agrupa para contarlos y finalmente rechaza fila con la cuenta correspondiente a la editorial "Planeta"
+			ejem 4: select editorial, count(*) from libros group by editorial having editorial<>'Planeta';
+
+-- MODIFICADOR DEL GROUP BY (WITH ROLLUP y CUBE)
+	Podemos combinar "group by" con los operadores "rollup" y "cube"
+	ROLLUP -> El operador "rollup" agrega filas extras mostrando resultados de resumen por cada grupo y subgrupo
+		Entonces, "rollup" es un modificador para "group by" que agrega filas extras mostrando resultados de resumen de los subgrupos
+		Si necesitamos la cantidad de visitantes por ciudad empleamos la siguiente sentencia:
+			select ciudad,count(*) as cantidad from visitantes group by ciudad;
+		Esta consulta muestra el total de visitantes agrupados por ciudad
+		Pero si queremos ademas la cantidad total de visitantes, debemos realizar otra consulta:
+			select count(*) as total from visitantes;
+		Para obtener ambos resultados en una sola consulta podemos usar "with rollup" que nos devolvera ambas salidas en una sola consulta:
+			select ciudad,count(*) as cantidad from visitantes group by ciudad with rollup;
+		
+		La clausula "group by" permite agregar el modificador "with rollup", el cual agrega registros extras al resultado de una consulta, que muestran operaciones de resumen
+			select ciudad,sexo,count(*) as cantidad from visitantes group by ciudad,sexo with rollup;
+		
+		Es posible incluir varias funciones de agrupamiento, por ejemplo, queremos la cantidad de visitantes y la suma de sus compras agrupados por ciudad y sexo
+			select ciudad,sexo, count(*) as cantidad, sum(montocompra) as total from visitantes group by ciudad,sexo with rollup;
+	CUBE -> El operador "cube" genera filas de resumen de subgrupos para todas las combinaciones posibles de los valores de los campos por los que agrupamos
+
+		Ejem RollUp: select sexo,estadocivil,seccion, count(*) from empleados group by sexo,estadocivil,seccion with rollup;
+			SQL Server genera varias filas extras con informacion de resumen para los siguientes subgrupos:
+				- sexo y estadocivil (seccion seteado a "null")
+				- sexo (estadocivil y seccion seteados a "null")
+				- total (todos los campos seteados a "null").
+		Ejem Cube: select sexo,estadocivil,seccion, count(*) from empleados group by sexo,estadocivil,seccion with cube;	
+			Retorna mas filas extras ademas de las anteriores:
+				- sexo y seccion (estadocivil seteado a "null")
+				- estadocivil y seccion (sexo seteado a "null")
+				- seccion (sexo y estadocivil seteados a "null")
+				- estadocivil (sexo y seccion seteados a "null")
+
+*/
+
 
 
