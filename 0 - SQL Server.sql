@@ -276,56 +276,20 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	YEAR(fecha): retorna el anio de la fecha especificada. 
 		ejem: select year(getdate());
 
--------------- 4. FUNCIONES DE AGRUPAMIENTO (COUNT - SUM - MIN - MAX - AVG) --------------
+-------------- 4. FUNCIONES DE AGRUPAMIENTO (COUNT - SUM - MIN - MAX - AVG - TOP) --------------
 	El tipo de dato del campo determina las funciones que se pueden emplear con ellas
 	COUNT(campo): se puede emplear con cualquier tipo de dato
 	MIN(campo) - MAX(campo): con cualquier tipo de dato, retorna el valor maximo o minimo de un campo
 	SUM(campo) y AVG(campo): solo en campos de tipo numerico, retorna la suma o el valor promedio de los valores que contiene el campo especificado
-*/
+	
+	TOP ->  Se emplea para obtener solo una cantidad limitada de registros, los primeros n registros de una consulta
+		select top 3 titulo,autor from libros order by autor --> Consulta los titulos y autores de los 3 primeros libros, ordenados por autor
 
--- ORDER BY --> Podemos ordenar el resultado de un "select" para que los registros se muestren ordenados por algun campo
-/*
--- ORDENADORES LOGICOS ( AND - OR - NOT)
-	AND, significa "y"
-		ejem: select * from libros where (autor='Borges') and (precio<=20); --> Calculamos los libros cuyo autor sea igual a "Borges" y cuyo precio no supere los 20
-	OR, significa "y/o",
-		ejem: select * from libros where autor='Borges' or editorial='Planeta'; --> Calculamos los libros cuyo autor sea "Borges" y/o cuya editorial sea "Planeta"
-	NOT, significa "no", invierte el resultado
-		ejem: select * from libros where not editorial='Planeta'; --> Calculamos los libros que NO cumplan la condicion, aquellos cuya editorial NO sea "Planeta"
-	(), parentesis agrupa las condiciones que se quieren usar
-		ejem: select * from libros where (autor='Borges') or (editorial='Paidos' and precio<20);
-*/
-/*
--- OPERADORES RELACIONALES (IS NULL - BETWEEN - IN)
-	IS NULL --> Se emplea el operador "is null" para consultar los registros en los cuales este almacenado el valor "null"
-		ejem: select * from libros where editorial is null
-	BETWEEN --> Este operador se puede emplear con tipos de datos (numericos y money) y (fecha y hora)
-		ejem1: select * from libros where precio between 20 and 40 --> Consultamos los libros con precio mayor o igual a 20 y menor o igual a 40
-		ejem2: select *from libros where precio not between 20 and 35 --> Consultamos los libros cuyo precio NO se este entre 20 y 35, es decir, los menores a 15 y mayores a 25
-	IN --> Se utiliza "in" para averiguar si el valor de un campo esta incluido en una lista de valores especificada
-		ejem guia: select *from libros where autor='Borges' or autor='Paenza';
-		ejem: select * from libros where autor in('Borges','Paenza')
-*/
-/*
--- BUSQUEDA LIKE Y NOT LIKE
-	Se usa para realizar comparaciones exclusivamente de cadenas y utiliza varios comodines
-		% --> El simbolo "%" (porcentaje) reemplaza cualquier cantidad de caracteres
-			ejem1: select * from libros where autor like "%Borges%" --> Consulta todos los libros que contengan en autor el apellido BORGES
-			ejem2: select * from libros where titulo like 'M%' --> Consulta todos los libros que comiencen con "M"
-			ejem3: select titulo,precio from libros where precio like '1_.%' --> Consulta los libros cuyo precio se encuentre entre 10.00 y 19.99
-		_ --> el guion bajo "_" reemplaza un caracters
-			ejem: select * from libros where autor like '%Carrol_' --> Consulta los libros de "Lewis Carroll" pero no recordamos si se escribe "Carroll" o "Carrolt"
-		[] --> reemplaza cualquier caracter contenido en el conjunto especificado dentro de los corchetes
-			ejem1: select titulo,editorial from libros where editorial like '[P-S]%' --> Consulta los libros cuya editorial comienza con las letras entre la "P" y la "S"
-			ejem2: select titulo,editorial from libros where editoriallike '[a-cf-i]%'--> Consulta cadenas que comiencen con a,b,c,f,g,h o i;
-			ejem3: select titulo,editorial from libros where editoriallike '[-acfi]%'--> Consulta cadenas que comiencen con -,a,c,f o i;
-			ejem4: select titulo,editorial from libros where editoriallike 'A[_]9%'--> Consulta cadenas que comiencen con 'A_9';
-			ejem5: select titulo,editorial from libros where editoriallike 'A[nm]%'--> Consulta cadenas que comiencen con 'An' o 'Am'
-		[^] --> reemplaza cualquier caracter NO presente en el conjunto especificado dentro de los corchetes
-			select titulo,autor,editorial from libros where editorial like '[^PN]%' --> Consulta los libros cuya editorial NO comienza con las letras "P" ni "N"
-*/
--- COUNT/COUNT_BIG -> La funcion "count()" cuenta la cantidad de registros de una tabla, incluyendo los que tienen valor nulo
-/*
+		Cuando se combina con "order by" es posible emplear tambien la clausula "with ties". 
+		Esta clausula permite incluir en la seleccion, todos los registros que tengan el mismo valor del campo por el que se ordena en la ultima posicion
+		select top 3 with ties * from libros order by autor --> Consulta los titulos y autores de los libros q cumplan con la misma condicion de ordenamiento
+
+-------------- 5. FUNCIONES DE AGRUPAMIENTO AVANZADOS (GROUP BY/GROUP BY ALL - HAVING - WITH ROLLUP y CUBE - GROUPING) --------------
 -- GROUP BY/GROUP BY ALL  -> Agrupa registros para consultas detalladas
 		Note que las editoriales que no tienen libros que cumplan la condicion, no aparecen en la salida. 
 		Para que aparezcan todos los valores de editorial, incluso los que devuelven cero o "null" en la columna de agregado, 
@@ -361,6 +325,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Es posible incluir varias funciones de agrupamiento, por ejemplo, queremos la cantidad de visitantes y la suma de sus compras agrupados por ciudad y sexo
 			select ciudad,sexo, count(*) as cantidad, sum(montocompra) as total from visitantes group by ciudad,sexo with rollup;
 	CUBE -> El operador "cube" genera filas de resumen de subgrupos para todas las combinaciones posibles de los valores de los campos por los que agrupamos
+		Es decir, "cube" genera filas de resumen de subgrupos para todas las combinaciones posibles de los valores de los campos por los que agrupamos
 
 		Ejem RollUp: select sexo,estadocivil,seccion, count(*) from empleados group by sexo,estadocivil,seccion with rollup;
 			SQL Server genera varias filas extras con informacion de resumen para los siguientes subgrupos:
@@ -373,8 +338,104 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				- estadocivil y seccion (sexo seteado a "null")
 				- seccion (sexo y estadocivil seteados a "null")
 				- estadocivil (sexo y seccion seteados a "null")
+-- FUNCION GROUPING
+	La funcion "grouping" se emplea con los operadores "rollup" y "cube" para distinguir los valores de detalle y de resumen en el resultado. 
+	Es decir, permite diferenciar si los valores "null" que aparecen en el resultado son valores nulos de las tablas o si son una fila generada por 
+	los operadores "rollup" o "cube"
+	Con esta funcion aparece una nueva columna en la salida, una por cada "grouping"; 
+	Retorna el valor 1 para indicar que la fila representa los valores de resumen de "rollup" o "cube" y el valor 0 para representar los valores de campo
 
+		Si tenemos una tabla "visitantes" y contamos la cantidad agrupando por ciudad
+			select ciudad, count(*) as cantidad from visitantes group by ciudad with rollup;
+		La ultima fila es la de resumen generada por "rollup", pero no es posible distinguirla de la primera fila, en la cual "null" es un valor del campo. 
+		Para diferenciarla empleamos "grouping
+			select ciudad, count(*) as cantidad, grouping(ciudad) as resumen from visitantes group by ciudad with rollup
+		
+		La ultima fila contiene en la columna generada por "grouping" el valor 1, indicando que es la fila de resumen generada por "rollup"; 
+		La primera fila, contiene en dicha columna el valor 0, que indica que el valor "null" es un valor del campo "ciudad"
 */
 
+-- ORDER BY --> Podemos ordenar el resultado de un "select" para que los registros se muestren ordenados por algun campo
 
+/*
+-- ORDENADORES LOGICOS ( AND - OR - NOT)
+	AND, significa "y"
+		ejem: select * from libros where (autor='Borges') and (precio<=20); --> Calculamos los libros cuyo autor sea igual a "Borges" y cuyo precio no supere los 20
+	OR, significa "y/o",
+		ejem: select * from libros where autor='Borges' or editorial='Planeta'; --> Calculamos los libros cuyo autor sea "Borges" y/o cuya editorial sea "Planeta"
+	NOT, significa "no", invierte el resultado
+		ejem: select * from libros where not editorial='Planeta'; --> Calculamos los libros que NO cumplan la condicion, aquellos cuya editorial NO sea "Planeta"
+	(), parentesis agrupa las condiciones que se quieren usar
+		ejem: select * from libros where (autor='Borges') or (editorial='Paidos' and precio<20);
+*/
+
+/*
+-- OPERADORES RELACIONALES (IS NULL - BETWEEN - IN)
+	IS NULL --> Se emplea el operador "is null" para consultar los registros en los cuales este almacenado el valor "null"
+		ejem: select * from libros where editorial is null
+	BETWEEN --> Este operador se puede emplear con tipos de datos (numericos y money) y (fecha y hora)
+		ejem1: select * from libros where precio between 20 and 40 --> Consultamos los libros con precio mayor o igual a 20 y menor o igual a 40
+		ejem2: select *from libros where precio not between 20 and 35 --> Consultamos los libros cuyo precio NO se este entre 20 y 35, es decir, los menores a 15 y mayores a 25
+	IN --> Se utiliza "in" para averiguar si el valor de un campo esta incluido en una lista de valores especificada
+		ejem guia: select *from libros where autor='Borges' or autor='Paenza';
+		ejem: select * from libros where autor in('Borges','Paenza')
+*/
+
+/*
+-- BUSQUEDA LIKE Y NOT LIKE
+	Se usa para realizar comparaciones exclusivamente de cadenas y utiliza varios comodines
+		% --> El simbolo "%" (porcentaje) reemplaza cualquier cantidad de caracteres
+			ejem1: select * from libros where autor like "%Borges%" --> Consulta todos los libros que contengan en autor el apellido BORGES
+			ejem2: select * from libros where titulo like 'M%' --> Consulta todos los libros que comiencen con "M"
+			ejem3: select titulo,precio from libros where precio like '1_.%' --> Consulta los libros cuyo precio se encuentre entre 10.00 y 19.99
+		_ --> el guion bajo "_" reemplaza un caracters
+			ejem: select * from libros where autor like '%Carrol_' --> Consulta los libros de "Lewis Carroll" pero no recordamos si se escribe "Carroll" o "Carrolt"
+		[] --> reemplaza cualquier caracter contenido en el conjunto especificado dentro de los corchetes
+			ejem1: select titulo,editorial from libros where editorial like '[P-S]%' --> Consulta los libros cuya editorial comienza con las letras entre la "P" y la "S"
+			ejem2: select titulo,editorial from libros where editoriallike '[a-cf-i]%'--> Consulta cadenas que comiencen con a,b,c,f,g,h o i;
+			ejem3: select titulo,editorial from libros where editoriallike '[-acfi]%'--> Consulta cadenas que comiencen con -,a,c,f o i;
+			ejem4: select titulo,editorial from libros where editoriallike 'A[_]9%'--> Consulta cadenas que comiencen con 'A_9';
+			ejem5: select titulo,editorial from libros where editoriallike 'A[nm]%'--> Consulta cadenas que comiencen con 'An' o 'Am'
+		[^] --> reemplaza cualquier caracter NO presente en el conjunto especificado dentro de los corchetes
+			select titulo,autor,editorial from libros where editorial like '[^PN]%' --> Consulta los libros cuya editorial NO comienza con las letras "P" ni "N"
+*/
+
+-- COUNT/COUNT_BIG -> La funcion "count()" cuenta la cantidad de registros de una tabla, incluyendo los que tienen valor nulo
+-- DISTINCT -> Se especifica que los registros con ciertos datos duplicados sean obviadas en el resultado
+
+/*
+-- CLAVE/LLAVE PRIMARIA COMPUESTA
+	Las claves primarias pueden ser simples, formadas por un solo campo o compuestas, mas de un campo
+	Existe un estacionamiento que almacena cada dia los datos de los vehiculos que ingresan en la tabla llamada "vehiculos"*/
+		create table vehiculos(
+			patente char(6) not null,
+			tipo char(1),--'a'=auto, 'm'=moto
+			horallegada datetime,
+			horasalida datetime,
+			primary key(patente,horallegada)
+		);
+		insert into vehiculos values('AIC124','a','8:05','12:30');
+		insert into vehiculos values('CAA258','a','8:05',null);
+		insert into vehiculos values('DSE367','m','8:30','18:00');
+		insert into vehiculos values('FGT458','a','9:00',null);
+		insert into vehiculos values('AIC124','a','16:00',null);
+		insert into vehiculos values('LOI587','m','18:05','19:55');
+
+/*	
+	Necesitamos definir una clave primaria para una tabla con los datos descriptos arriba. 
+	No podemos usar solamente la patente porque un mismo auto puede ingresar mas de una vez en el dia a la playa
+	Tampoco podemos usar la hora de entrada porque varios autos pueden ingresar a una misma hora.
+	
+	Definimos una clave compuesta cuando ningun campo por si solo cumple con la condicion para ser clave
+	En este ejemplo, un auto puede ingresar varias veces en un dia a la playa, pero siempre sera a distinta hora
+	Usamos 2 campos como clave, la patente junto con la hora de llegada, asi identificamos univocamente cada registro
+*/
+
+/*
+------------------------------------------ INTEGRIDAD DE LOS DATOS ------------------------------------------
+-------------- 1. RESTRICCIONES (CONSTRAINTS) --------------
+	Las restricciones (constraints) son un metodo para mantener la integridad de los datos, asegurando que los valores ingresados sean validos 
+	y que las relaciones entre las tablas se mantenga. Se establecen a los campos y las tablas
+	Pueden definirse al crear la tabla ("create table") o agregarse a una tabla existente (empleando "alter table") y se pueden aplicar a un campo o a varios
+*/
 
