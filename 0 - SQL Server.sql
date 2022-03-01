@@ -776,7 +776,62 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Eliminamos el indice "I_libros_titulo" si existe:
 			if exists (select *from sysindexes where name = 'I_libros_titulo') drop index libros.I_libros_titulo
 */
+/*------------------------------------------ VARIAS TABLAS (JOIN) ------------------------------------------
+	Un join es una operacion que relaciona dos o mas tablas para obtener un resultado que incluya datos (campos y registros) de ambas
+	Las tablas participantes se combinan segun los campos comunes a ambas tablas
+	Hay tres tipos de combinaciones:
+		- combinaciones internas (INNER JOIN o JOIN)
+		- combinaciones externas (LEFT JOIN - RIGHT JOIN - FULL JOIN)
+		- combinaciones cruzadas (CROSS JOIN)
+	Para evitar la repeticion de datos y ocupar menos espacio, se separa la informacion en varias tablas. 
+	Cada tabla almacena parte de la informacion que necesitamos registrar
 
+	Por ejemplo, los datos de nuestra tabla "libros" podrian separarse en 2 tablas, una llamada "libros" y otra "editoriales" que guardara la informacion de las editoriales
+*/
+	create table libros(
+		codigo int identity,
+		titulo varchar(40) not null,
+		autor varchar(30) not null default 'Desconocido',
+		codigoeditorial tinyint not null,
+		precio decimal(5,2),
+		primary key (codigo)
+	);
+
+	create table editoriales(
+		codigo tinyint identity,
+		nombre varchar(20) not null,
+		primary key(codigo)
+	);
+/*
+	Cuando obtenemos informacion de mas de una tabla decimos que hacemos un "join" (combinacion).
+	Veamos un ejemplo:
+		ejem: select * from libros join editoriales on libros.codigoeditorial=editoriales.codigo;
+--------------- 1. COMBINACION INTERNA (INNER JOIN)
+		La combinacion interna emplea "join", que es la forma abreviada de "inner join". 
+		Se emplea para obtener informacion de dos tablas y combinar dicha informacion en una salida.
+		La sintaxis basica es la siguiente:
+			sintaxis: select CAMPOS from TABLA1 join TABLA2 on CONDICIONdeCOMBINACION
+			ejem: select * from libros join editoriales on libros.codigoeditorial=editoriales.codigo;
+
+--------------- 2. COMBINACION EXTERNA IZQUIERDA (LEFT JOIN)
+		Si queremos saber que registros de una tabla NO encuentran correspondencia en la otra, es decir, no existe valor coincidente en la segunda, 
+		necesitamos otro tipo de combinacion, "outer join" (combinacion externa)
+		Las combinaciones externas combinan registros de dos tablas que cumplen la condicion, mas los registros de la segunda tabla que no la cumplen; 
+		Es decir, muestran todos los registros de las tablas relacionadas, aun cuando no haya valores coincidentes entre ellas
+
+		Se emplea una combinacion externa izquierda para mostrar todos los registros de la tabla de la izquierda. 
+		Si no encuentra coincidencia con la tabla de la derecha, el registro muestra los campos de la segunda tabla seteados a "null"
+
+		Entonces, un "left join" se usa para hacer coincidir registros en una tabla (izquierda) con otra tabla (derecha)
+		Si un valor de la tabla de la izquierda no encuentra coincidencia en la tabla de la derecha, se genera una fila extra (una por cada valor no encontrado) 
+		con todos los campos correspondientes a la tabla derecha seteados a "null". 
+		La sintaxis basica es la siguiente:
+			sintaxis: select CAMPOS from TABLAIZQUIERDA left join TABLADERECHA on CONDICION
+			ejem1: select titulo,nombre from editoriales as e left join libros as l on codigoeditorial = e.codigo
+			ejem2: select titulo,nombre from libros as l left join editoriales as e on codigoeditorial = e.codigo
+
+--------------- 3. COMBINACION EXTERNA DERECHA (RIGHT JOIN)
+*/
 
 
 
