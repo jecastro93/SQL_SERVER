@@ -692,6 +692,37 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 					ejem: drop default VP_cero;
 */
 
+/*------------------------------------------ INDICES ------------------------------------------
+	El objetivo de un indice es acelerar la consulta de informacion. 
+	La indexacion es una tecnica que optimiza el acceso a los datos, mejora el rendimiento acelerando las consultas y otras operaciones. 
+	Es util cuando la tabla contiene miles de registros, cuando se realizan operaciones de ordenamiento y agrupamiento y cuando se combinan varias tablas
+	SQL Server accede a los datos de dos maneras:
+		Recorriendo las tablas --> Comenzando el principio y extrayendo los registros que cumplen las condiciones de la consulta
+		Empleando indices --> Recorriendo la estructura de arbol del indice para localizar los registros y extrayendo los que cumplen las condiciones de la consulta
+	Los indices se emplean para facilitar la obtencion de informacion de una tabla
+	El indice de una tabla desempena la misma funcion que el indice de un libro: permite encontrar datos rapidamente
+		Una tabla se indexa por un campo (o varios)
+		Un indice posibilita el acceso directo y rapido haciendo mas eficiente las busquedas
+		Sin indice, SQL Server debe recorrer secuencialmente toda la tabla para encontrar un registro
+	La desventaja es que consume espacio en el disco y genera costo de mantenimiento (tiempo y recursos)
+	SQL Server permite crear dos tipos de indices: 1) agrupados y 2) no agrupados
+	-- 1. INDICE AGRUPADO (CLUSTERED)
+		Es similar a una guia telefonica, los registros con el mismo valor de campo se agrupan juntos
+		Un indice agrupado determina la secuencia de almacenamiento de los registros en una tabla
+		Se utilizan para campos por los que se realizan busquedas con frecuencia o se accede siguiendo un orden
+		Una tabla solo puede tener UN indice agrupado
+	-- 2. INDICE NO AGRUPADO (NONCLUSTERED)
+		Es como el indice de un libro, los datos se almacenan en un lugar diferente al del indice, 
+		los punteros indican el lugar de almacenamiento de los elementos indizados en la tabla
+		Un indice no agrupado se emplea cuando se realizan distintos tipos de busquedas frecuentemente, con campos en los que los datos son unicos
+		Una tabla puede tener hasta 249 indices no agrupados
+	
+	Es recomendable crear los indices agrupados antes que los no agrupados, porque los primeros modifican el orden fisico de los registros, ordenandolos secuencialmente
+	Resumiendo, los indices facilitan la recuperacion de datos, permitiendo el acceso directo y acelerando las busquedas, consultas y otras operaciones que optimizan el rendimiento general
+
+---------------------------- 1. () --------------*/
+
+
 
 
 
@@ -749,5 +780,6 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_bindefault NOMBRE, 'NOMBRETABLA.CAMPO' -> Luego de crear un valor predeterminado, debemos asociarlo a un campo (o a un tipo de datos definido por el usuario)
 		exec sp_bindefault VP_datodesconocido, 'empleados.domicilio'
 	exec sp_unbindefault 'TABLA.CAMPO' ->  Para deshacer una asociacion
-		exec sp_unbindefault 'empleados.domicilio';
+		exec sp_unbindefault 'empleados.domicilio'
+	exec sp_help NOMBREVALORPREDETERMINADO
 */
