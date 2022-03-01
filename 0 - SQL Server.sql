@@ -720,7 +720,62 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	Es recomendable crear los indices agrupados antes que los no agrupados, porque los primeros modifican el orden fisico de los registros, ordenandolos secuencialmente
 	Resumiendo, los indices facilitan la recuperacion de datos, permitiendo el acceso directo y acelerando las busquedas, consultas y otras operaciones que optimizan el rendimiento general
 
----------------------------- 1. () --------------*/
+----------------- 1. CREACION DE INDICES
+		La sintaxis basica es la siguiente:
+			sintaxis: create TIPODEINDICE index NOMBREINDICE on TABLA(CAMPO);
+				"TIPODEINDICE" indica si es agrupado (clustered) o no agrupado (nonclustered). Si no especificamos crea uno No agrupado
+		
+		En este ejemplo se crea un indice agrupado unico para el campo "codigo" de la tabla "libros":
+			ejem: create unique clustered index I_libros_codigo on libros(codigo);
+				Para identificar los indices facilmente, podemos agregar un prefijo al nombre del indice, por ejemplo "I" y luego el nombre de la tabla y/o campo
+
+		En este ejemplo se crea un indice no agrupado para el campo "titulo" de la tabla "libros":
+			ejem: create nonclustered index I_libros_titulo on libros(titulo);
+
+		Un indice puede tener mas de un campo como clave, son indices compuestos
+		Los campos de un indice compuesto tienen que ser de la misma tabla (excepto cuando se crea en una vista)
+
+			Creamos un indice compuesto para el campo "autor" y "editorial":
+			ejem: create index I_libros_autoreditorial on libros(autor,editorial);
+		
+		SQL Server crea automaticamente indices cuando se establece una restriccion "primary key" o "unique" en una tabla. 
+		Al crear una restriccion "primary key", si no se especifica, el indice sera agrupado (clustered) a menos que ya exista un indice agrupado para dicha tabla. 
+		Al crear una restriccion "unique", si no se especifica, el indice sera no agrupado (non-clustered)
+
+		Para ver los indices de una tabla:
+		ejem: exec sp_helpindex libros
+
+----------------- 2. REGENERAR INDICES
+		Empleando la opcion "drop_existing" junto con "create index" permite regenerar un indice, con ello evitamos eliminarlo y volver a crearlo. 
+		La sintaxis es la siguiente:
+-			sintaxis: create TIPODEINDICE index NOMBREINDICE on TABLA(CAMPO) with drop_existing;
+
+		Tambien podemos modificar alguna de las caracteristicas de un indice con esta opcion
+			- tipo: cambiandolo de no agrupado a agrupado (siempre que no exista uno agrupado para la misma tabla)
+				No se puede convertir un indice agrupado en No agrupado
+			- campo: se puede cambiar el campo por el cual se indexa, agregar campos, eliminar algun campo de un indice compuesto
+			- unico: se puede modificar un indice para que los valores sean unicos o dejen de serlo
+		
+		En este ejemplo se crea un indice no agrupado para el campo "titulo" de la tabla "libros":
+			ejem: create nonclustered index I_libros on libros(titulo)
+		
+		Regeneramos el indice "I_libros" y lo convertimos a agrupado:
+			ejem: create clustered index I_libros on libros(titulo) with drop_existing;
+
+		Agregamos un campo al indice "I_libros": 
+			ejem: create clustered index I_libros on libros(titulo,editorial) with drop_existing;
+
+----------------- 3. ELIMINAR INDICES
+		Los indices creados con "create index" se eliminan con "drop index"; la siguiente es la sintaxis basica:
+			sintaxis: drop index NOMBRETABLA.NOMBREINDICE;
+		Eliminamos el indice "I_libros_titulo":
+			ejem: drop index libros.I_libros_titulo;
+		
+		Podemos averiguar si existe un indice para eliminarlo, consultando la tabla del sistema "sysindexes":
+			if exists (select name from sysindexes where name = 'NOMBREINDICE') drop index NOMBRETABLA.NOMBREINDICE;
+		Eliminamos el indice "I_libros_titulo" si existe:
+			if exists (select *from sysindexes where name = 'I_libros_titulo') drop index libros.I_libros_titulo
+*/
 
 
 
@@ -782,4 +837,6 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_unbindefault 'TABLA.CAMPO' ->  Para deshacer una asociacion
 		exec sp_unbindefault 'empleados.domicilio'
 	exec sp_help NOMBREVALORPREDETERMINADO
+	ejem: exec sp_helpindex libros -> Para ver los indices de una tabla:
+		
 */
