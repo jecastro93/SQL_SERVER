@@ -831,6 +831,47 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			ejem2: select titulo,nombre from libros as l left join editoriales as e on codigoeditorial = e.codigo
 
 --------------- 3. COMBINACION EXTERNA DERECHA (RIGHT JOIN)
+		Una combinacion externa derecha opera del mismo modo solo que la tabla derecha es la que localiza los registros en la tabla izquierda.
+		En el siguiente ejemplo solicitamos el titulo y nombre de la editorial de los libros empleando un "right join":
+			ejem: select titulo,nombre from libros as l right join editoriales as e on codigoeditorial = e.codigo
+
+		Un "right join" hace coincidir registros en una tabla (derecha) con otra tabla (izquierda)
+		Si un valor de la tabla de la derecha no encuentra coincidencia en la tabla izquierda, se genera una fila extra (una por cada valor no encontrado) 
+		con todos los campos correspondientes a la tabla izquierda seteados a "null". La sintaxis basica es la siguiente:
+		sintaxis: select CAMPOS from TABLAIZQUIERDA right join TABLADERECHA on CONDICION;
+
+--------------- 4. COMBINACION EXTERNA COMPLETA (FULL JOIN)
+		Una combinacion externa completa ("full outer join" o "full join") retorna todos los registros de ambas tablas
+		Veamos un ejemplo:
+			ejem: select titulo,nombre from editoriales as e full join libros as l on codigoeditorial = e.codigo
+
+--------------------------------EJEMPLOS DE COMBINACIONES EXTERNAS
+		select titulo,nombre from libros as l left join editoriales as e on codigoeditorial = e.codigo;
+		select titulo,nombre from libros as l right join editoriales as e on codigoeditorial = e.codigo;
+		select titulo,nombre from editoriales as e full join libros as l on codigoeditorial = e.codigo;
+
+--------------- 5. COMBINACION CRUZADAS (CROSS JOIN)
+		Las combinaciones cruzadas (cross join) muestran todas las combinaciones de todos los registros de las tablas combinadas 
+		Para este tipo de join no se incluye una condicion de enlace
+		Se genera el producto cartesiano en el que el numero de filas del resultado es igual al numero de registros de la primera tabla 
+		multiplicado por el numero de registros de la segunda tabla, es decir, si hay 5 registros en una tabla y 6 en la otra, retorna 30 filas
+		La sintaxis basica es esta:
+			sintaxis: select CAMPOS from TABLA1 cross join TABLA2
+			ejem: select titulo,nombre from libros as l cross join editoriales as e
+
+--------------- 6. AUTOCOMBINACION
+		Es posible combinar una tabla consigo misma
+		Un pequeno restaurante tiene almacenadas sus comidas en una tabla llamada "comidas" que consta de los siguientes campos:
+			- nombre varchar(20),
+			- precio decimal (4,2) y
+			- rubro char(6)-- que indica con 'plato' si es un plato principal y 'postre' si es postre.
+				
+				Podemos obtener la combinacion de platos empleando un "cross join" con una sola tabla:
+					ejem1: select c1.nombre as 'plato principal',c2.nombre as postre,c1.precio+c2.precio as total from comidas as c1 join comidas as c2;
+				
+				En la consulta anterior aparecen filas duplicadas, para evitarlo debemos emplear un "where": 
+					ejem2: select c1.nombre as 'plato principal',c2.nombre as postre,c1.precio+c2.precio as total from comidas as c1 join comidas as c2
+						where c1.rubro='plato' and c2.rubro='postre';
 */
 
 
