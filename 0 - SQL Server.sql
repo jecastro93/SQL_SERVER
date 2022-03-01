@@ -432,6 +432,10 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 */
 
 /*------------------------------------------ INTEGRIDAD DE LOS DATOS ------------------------------------------
+	Recuerde que cuando agregamos una restriccion a una tabla que contiene informacion
+	SQL Server controla los datos existentes para confirmar que cumplen la condicion de la restriccion
+	Si no los cumple, la restriccion no se aplica y aparece un mensaje de error.
+
 -------------- 1. RESTRICCIONES (CONSTRAINTS) --------------
 	Las restricciones (constraints) son un metodo para mantener la integridad de los datos, asegurando que los valores ingresados sean validos 
 	y que las relaciones entre las tablas se mantenga. Se establecen a los campos y las tablas
@@ -439,14 +443,14 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	El procedimiento almacenado del sistema "sp_helpconstraint" junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
 	Hay varios tipos de restricciones:
 
--------------- 2. RESTRICCION (DEFAULT) --------------
+-------------- 2. RESTRICCION CAMPO (DEFAULT) --------------
 	La restriccion "default" especifica un valor por defecto para un campo cuando no se inserta explicitamente en un comando "insert"
 	Anteriormente, para establecer un valor por defecto para un campo empleabamos la clausula "default" al crear la tabla:
 		ejem: create table libros(...autor varchar(30) default 'Desconocido', ...);
 		Dicha restriccion, a la cual no le dabamos un nombre, recibia un nombre dado por SQL Server que consiste "DF" (por default), 
 		seguido del nombre de la tabla, el nombre del campo y letras y numeros aleatorios
 		Podemos agregar una restriccion "default" a una tabla existente con la sintaxis basica siguiente:
-			alter table NOMBRETABLA add constraint NOMBRECONSTRAINT default VALORPORDEFECTO for CAMPO;
+			sintaxis: alter table NOMBRETABLA add constraint NOMBRECONSTRAINT default VALORPORDEFECTO for CAMPO;
 			Cuando demos el nombre a las restricciones "default" formato similar al que le da SQL Server: "DF_NOMBRETABLA_NOMBRECAMPO"
 		
 		La restriccion "default" acepta valores tomados de funciones del sistema, por ejemplo:
@@ -461,26 +465,102 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				- status_enabled y status_for_replication: no tienen valores para este tipo de restriccion
 				- constraint_keys: el valor por defecto (Desconocido)
 
--------------- 3. RESTRICCION (CHECK) --------------
+-------------- 3. RESTRICCION CAMPO (CHECK) --------------
 	La restriccion "check" especifica los valores que acepta un campo, evitando que se ingresen valores inapropiados
 	La sintaxis basica es la siguiente:
-		alter table NOMBRETABLA add constraint NOMBRECONSTRAINT check CONDICION
+		sintaxis: alter table NOMBRETABLA add constraint NOMBRECONSTRAINT check CONDICION
 
 		Trabajamos con la tabla "libros" de una libreria que tiene los siguientes campos: codigo, titulo, autor, editorial, preciomin, preciomay
 		Los campos de los precios (minorista y mayorista) se definen de tipo decimal(5,2), es decir, aceptan valores entre -999.99 y 999.99. 
 		Podemos controlar que no se ingresen valores negativos para dichos campos agregando una restriccion "check"
-			alter table libros add constraint CK_libros_precio_positivo check (preciomin>=0 and preciomay>=0)
+			ejem: alter table libros add constraint CK_libros_precio_positivo check (preciomin>=0 and preciomay>=0)
 
 		La condicion puede hacer referencia a otros campos de la misma tabla. 
 		Por ejemplo, podemos controlar que el precio mayorista no sea mayor al precio minorista
-			alter table libros add constraint CK_libros_preciominmay check (preciomay<=preciomin)
+			ejem: alter table libros add constraint CK_libros_preciominmay check (preciomay<=preciomin)
 		
 		Las condiciones para restricciones "check" tambien pueden pueden incluir un patron o una lista de valores. 
 		Por ejemplo establecer que cierto campo conste de 4 caracteres, 2 letras y 2 digitos
-			alter table libros add constraint CK_libros_nombre check (CAMPO like '[A-Z][A-Z][0-9][0-9]');
+			ejem: alter table libros add constraint CK_libros_nombre check (CAMPO like '[A-Z][A-Z][0-9][0-9]');
 
 		O establecer que cierto campo asuma solo los valores que se listan
-			alter table libros add constraint CK_libros_dias check (CAMPO in ('lunes','miercoles','viernes'));
+			ejem: alter table libros add constraint CK_libros_dias check (CAMPO in ('lunes','miercoles','viernes'));
+
+-------------- 3. DESAHBILITAR RESTRICCION CAMPO (WITH CHECK - NO CHECK) --------------
+	La restriccion "check" a una tabla para que SQL Server acepte los valores ya almacenados que infringen la restriccion. 
+	Para ello debemos incluir la opcion "with nocheck" en la instruccion "alter table"
+		ejem: alter table libros with nocheck add constraint CK_libros_precio check (precio>=0);
+	
+		La restriccion no se aplica en los datos existentes, pero si intentamos ingresar un nuevo valor que no cumpla la restriccion, SQL Server no lo permite
+
+	Para evitar la comprobacion de datos existentes al crear la restriccion, la sintaxis basica es la siguiente
+		sintaxis: alter table TABLA with nocheck add constraint NOMBRERESTRICCION check (CONDICION);
+
+	Tambien podemos deshabilitar las restricciones para agregar o actualizar datos sin comprobarla:
+		ejem: alter table libros nocheck constraint CK_libros_precio;
+
+	Para habilitar una restriccion deshabilitada se ejecuta la misma instruccion pero con la clausula "check" o "check all":
+		ejem: alter table libros check constraint CK_libros_precio;
+
+	Si se emplea "check constraint all" no se coloca nombre de restricciones, habilita todas las restricciones que tiene la tabla nombrada
+
+	Para saber si una restriccion esta habilitada o no, podemos ejecutar el procedimiento almacenado "sp_helpconstraint" y fijarnos lo que informa la columna "status_enabled".
+
+-------------- 4. RESTRICCION TABLA(PRIMARY KEY) --------------
+	Hemos visto las restricciones que se aplican a los campos, "default" y "check".
+	Ahora veremos las restricciones que se aplican a las tablas, que aseguran valores unicos para cada registro.
+	-- PRIMARY KEY
+		Para establecer una clave primaria para una tabla empleabamos la siguiente sintaxis al crear la tabla, por ejemplo:
+			ejem: create table libros(codigo int not null, titulo varchar(30),primary key(codigo));
+		
+		Podemos agregar una restriccion "primary key" a una tabla existente con la sintaxis basica siguiente:
+			ejem: alter table NOMBRETABLA add constraint NOMBRECONSTRAINT primary key (CAMPO);
+
+			En el siguiente ejemplo definimos una restriccion "primary key" para nuestra tabla "libros"
+				ejem: alter table libros add constraint PK_libros_codigo primary key(codigo);
+		
+		Por convencion, cuando demos el nombre a las restricciones "primary key" seguiremos el formato 
+			sintaxis: PK_NOMBRETABLA_NOMBRECAMPO
+		
+-------------- 5. RESTRICCION TABLA(UNIQUE) --------------
+	La restriccion "unique" impide la duplicacion de claves alternas (no primarias), es decir, especifica que dos registros no puedan tener el mismo valor en un campo. 
+	Se permiten valores nulos. Se pueden aplicar varias restricciones de este tipo a una misma tabla, y pueden aplicarse a uno o varios campos que no sean clave primaria.
+
+	Se emplea cuando ya se establecio una clave primaria (como un numero de legajo) pero se necesita asegurar que otros datos 
+	tambien sean unicos y no se repitan (como numero de documento).
+
+		sintaxis: alter table NOMBRETABLA add constraint NOMBRERESTRICCION unique (CAMPO);
+		ejem: alter table alumnos add constraint UQ_alumnos_documento unique (documento);
+		
+		En el ejemplo anterior se agrega una restriccion "unique" sobre el campo "documento" de la tabla "alumnos"
+		Esto asegura que no se pueda ingresar un documento si ya existe. Esta restriccion permite valores nulos
+
+		Por convencion, cuando demos el nombre a las restricciones "unique" seguiremos la misma estructura
+			sintaxis: UQ_NOMBRETABLA_NOMBRECAMPO
+
+-------------- 6. INFORMACION DE RESTRICCIONES TABLA(sp_helpconstraint) --------------
+	El procedimiento almacenado "sp_helpconstraint" seguido del nombre de una tabla muestra la informacion referente a todas las restricciones establecidas en dicha tabla, 
+	devuelve las siguientes columnas:
+		- constraint_type: tipo de restriccion. Si es una restriccion de campo (default o check) indica sobre que campo fue establecida. 
+			Si es de tabla (primary key o unique) indica el tipo de indice creado.
+		- constraint_name: nombre de la restriccion.
+		- delete_action: solamente es aplicable para restricciones de tipo "foreign key".
+		- update_action: solo es aplicable para restricciones de tipo "foreign key".
+		- status_enabled: solamente es aplicable para restricciones de tipo "check" y "foreign key". 
+			Indica si esta habilitada (Enabled) o no (Disabled). Indica "n/a" en cualquier restriccion para la que no se aplique.
+		- status_for_replication: solamente es aplicable para restricciones de tipo "check" y "foreign key". Indica "n/a" en cualquier restriccion para la que no se aplique.
+		- constraint_keys: Si es una restriccion "check" muestra la condicion de chequeo; si es una restriccion "default", el valor por defecto
+			Si es una "primary key" o "unique" muestra el/ los campos a los que se aplicaron la restriccion.
+
+-------------- 6. ELIMINAR RESTRICCIONES TABLA(sp_helpconstraint) --------------
+	Para eliminar una restriccion, la sintaxis basica es la siguiente:
+		sintaxis: alter table NOMBRETABLA drop NOMBRERESTRICCION;
+	
+	Para eliminar la restriccion "DF_libros_autor" de la tabla libros tipeamos:
+		ejem: alter table libros drop DF_libros_autor;
+	
+	Pueden eliminarse varias restricciones con una sola instruccion separandolas por comas.
+	Cuando eliminamos una tabla, todas las restricciones que fueron establecidas en ella, se eliminan tambien
 */
 
 
@@ -522,9 +602,10 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 
 
 /*------------------------------------------ PROCEDIMIENTOS ALMACENADOS ------------------------------------------
-	exec sp_helpconstraint tabla -> junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
+	exec sp_helpconstraint tabla -> Junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
 	exec sp_columns tabla -> Nos muestra el detalle de la estructura de la tabla
 	exec sp_tables BD -> 
+	exec sp_helpconstraint tabla -> Para saber si una restriccion esta habilitada o no
 
 
 */
