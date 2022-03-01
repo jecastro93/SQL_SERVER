@@ -436,14 +436,14 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	SQL Server controla los datos existentes para confirmar que cumplen la condicion de la restriccion
 	Si no los cumple, la restriccion no se aplica y aparece un mensaje de error.
 
--------------- 1. RESTRICCIONES (CONSTRAINTS) --------------
+---------------------------- 1. RESTRICCIONES (CONSTRAINTS) --------------
 	Las restricciones (constraints) son un metodo para mantener la integridad de los datos, asegurando que los valores ingresados sean validos 
 	y que las relaciones entre las tablas se mantenga. Se establecen a los campos y las tablas
 	Pueden definirse al crear la tabla ("create table") o agregarse a una tabla existente (empleando "alter table") y se pueden aplicar a un campo o a varios
 	El procedimiento almacenado del sistema "sp_helpconstraint" junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
 	Hay varios tipos de restricciones:
 
--------------- 2. RESTRICCION CAMPO (DEFAULT) --------------
+-------------- 1.2. RESTRICCION CAMPO (DEFAULT) --------------
 	La restriccion "default" especifica un valor por defecto para un campo cuando no se inserta explicitamente en un comando "insert"
 	Anteriormente, para establecer un valor por defecto para un campo empleabamos la clausula "default" al crear la tabla:
 		ejem: create table libros(...autor varchar(30) default 'Desconocido', ...);
@@ -465,7 +465,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				- status_enabled y status_for_replication: no tienen valores para este tipo de restriccion
 				- constraint_keys: el valor por defecto (Desconocido)
 
--------------- 3. RESTRICCION CAMPO (CHECK) --------------
+-------------- 1.3. RESTRICCION CAMPO (CHECK) --------------
 	La restriccion "check" especifica los valores que acepta un campo, evitando que se ingresen valores inapropiados
 	La sintaxis basica es la siguiente:
 		sintaxis: alter table NOMBRETABLA add constraint NOMBRECONSTRAINT check CONDICION
@@ -486,7 +486,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		O establecer que cierto campo asuma solo los valores que se listan
 			ejem: alter table libros add constraint CK_libros_dias check (CAMPO in ('lunes','miercoles','viernes'));
 
--------------- 3. DESAHBILITAR RESTRICCION CAMPO (WITH CHECK - NO CHECK) --------------
+-------------- 1.4. DESAHBILITAR RESTRICCION CAMPO (WITH CHECK - NO CHECK) --------------
 	La restriccion "check" a una tabla para que SQL Server acepte los valores ya almacenados que infringen la restriccion. 
 	Para ello debemos incluir la opcion "with nocheck" en la instruccion "alter table"
 		ejem: alter table libros with nocheck add constraint CK_libros_precio check (precio>=0);
@@ -506,7 +506,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 
 	Para saber si una restriccion esta habilitada o no, podemos ejecutar el procedimiento almacenado "sp_helpconstraint" y fijarnos lo que informa la columna "status_enabled".
 
--------------- 4. RESTRICCION TABLA(PRIMARY KEY) --------------
+-------------- 1.5. RESTRICCION TABLA(PRIMARY KEY) --------------
 	Hemos visto las restricciones que se aplican a los campos, "default" y "check".
 	Ahora veremos las restricciones que se aplican a las tablas, que aseguran valores unicos para cada registro.
 	-- PRIMARY KEY
@@ -522,7 +522,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Por convencion, cuando demos el nombre a las restricciones "primary key" seguiremos el formato 
 			sintaxis: PK_NOMBRETABLA_NOMBRECAMPO
 		
--------------- 5. RESTRICCION TABLA(UNIQUE) --------------
+-------------- 1.6. RESTRICCION TABLA(UNIQUE) --------------
 	La restriccion "unique" impide la duplicacion de claves alternas (no primarias), es decir, especifica que dos registros no puedan tener el mismo valor en un campo. 
 	Se permiten valores nulos. Se pueden aplicar varias restricciones de este tipo a una misma tabla, y pueden aplicarse a uno o varios campos que no sean clave primaria.
 
@@ -538,7 +538,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Por convencion, cuando demos el nombre a las restricciones "unique" seguiremos la misma estructura
 			sintaxis: UQ_NOMBRETABLA_NOMBRECAMPO
 
--------------- 6. INFORMACION DE RESTRICCIONES TABLA(sp_helpconstraint) --------------
+-------------- 1.7. INFORMACION DE RESTRICCIONES TABLA(sp_helpconstraint) --------------
 	El procedimiento almacenado "sp_helpconstraint" seguido del nombre de una tabla muestra la informacion referente a todas las restricciones establecidas en dicha tabla, 
 	devuelve las siguientes columnas:
 		- constraint_type: tipo de restriccion. Si es una restriccion de campo (default o check) indica sobre que campo fue establecida. 
@@ -552,7 +552,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		- constraint_keys: Si es una restriccion "check" muestra la condicion de chequeo; si es una restriccion "default", el valor por defecto
 			Si es una "primary key" o "unique" muestra el/ los campos a los que se aplicaron la restriccion.
 
--------------- 6. ELIMINAR RESTRICCIONES TABLA(sp_helpconstraint) --------------
+-------------- 1.8. ELIMINAR RESTRICCIONES TABLA(sp_helpconstraint) --------------
 	Para eliminar una restriccion, la sintaxis basica es la siguiente:
 		sintaxis: alter table NOMBRETABLA drop NOMBRERESTRICCION;
 	
@@ -561,6 +561,56 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	
 	Pueden eliminarse varias restricciones con una sola instruccion separandolas por comas.
 	Cuando eliminamos una tabla, todas las restricciones que fueron establecidas en ella, se eliminan tambien
+
+---------------------------- 2. REGLAS (RULES) --------------
+	Las reglas especifican los valores que se pueden ingresar en un campo, asegurando que los datos se encuentren en un intervalo de valores especifico
+	coincidan con una lista de valores o sigan un patron, Una regla se asocia a un campo de una tabla, un campo puede tener solamente UNA regla asociado a el
+		SQL Server NO controla los datos existentes para confirmar que cumplen con la regla como lo hace al aplicar restricciones
+		Si no los cumple, la regla se asocia igualmente; pero al ejecutar una instruccion "insert" o "update" muestra un mensaje de error
+		Actua en inserciones y actualizaciones.
+
+	Sintaxis basica es la siguiente:
+		sintaxis: create rule NOMBREREGLA as @VARIABLE CONDICION
+	Por convencion, nombraremos las reglas comenzando con "RG"
+
+	Creamos una regla para restringir los valores que se pueden ingresar en un campo "sueldo" de una tabla llamada "empleados", estableciendo un intervalo de valores:
+		ejem: create rule RG_sueldo_intervalo as @sueldo between 100 and 1000
+	
+	Luego de crear la regla, debemos asociarla a un campo ejecutando un procedimiento almacenado del sistema empleando la siguiente sintaxis basica:
+		exec sp_bindrule NOMBREREGLA, 'TABLA.CAMPO';
+
+		Asociamos la regla creada anteriormente al campo "sueldo" de la tabla "empleados":
+		ejem: exec sp_bindrule RG_sueldo_intervalo, 'empleados.sueldo'
+	
+	La funcion que cumple una regla es basicamente la misma que una restriccion "check", las siguientes caracteristicas explican algunas diferencias entre ellas:
+		- Podemos definir varias restricciones "check" sobre un campo, un campo solamente puede tener una regla asociada a el
+		- Una restriccion "check" se almacena con la tabla, cuando esta se elimina, las restricciones tambien se borran. 
+			Las reglas son objetos diferentes e independientes de las tablas, si eliminamos una tabla, las reglas siguen existiendo en la base de datos
+		- Una restriccion "check" puede incluir varios campos; una regla puede asociarse a distintos campos
+		- Una restriccion "check" puede hacer referencia a otros campos de la misma tabla, una regla no
+
+	Recuerde que las reglas son objetos independientes de las tablas (no se eliminan al borrar la tabla), asi que debemos eliminarlas con las siguientes intrucciones
+		if object_id ('RG_documento_patron') is not null drop rule RG_documento_patron
+
+	EJEMPLOS:
+		create table empleados (
+			documento varchar(8) not null,
+			nombre varchar(30),
+			seccion varchar(20),
+			fechaingreso datetime,
+			hijos tinyint,
+			sueldo decimal(6,2)
+		);
+			VARCHAR - Creamos una regla que establezca un patron para el documento:
+				create rule RG_documento_patron as @documento like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+			VARCHAR - Creamos una regla para restringir los valores que se pueden ingresar en un campo "seccion":
+				create rule RG_empleados_seccion as @seccion in ('Secretaria','Contaduria','Sistemas','Gerencia');
+			DATETIME - Creamos una regla para restringir los valores que se pueden ingresar en el campo "fechaingreso", para que no sea posterior a la fecha actual:
+				create rule RG_empleados_fechaingreso as @fecha <= getdate();
+			INT - Creamos una regla para restringir los valores que se pueden ingresar en el campo "hijos":
+				create rule RG_hijos as @hijos between 0 and 20;
+			DECIMAL - Creamos una regla para restringir los valores que se pueden ingresar en un campo "sueldo":
+				create rule RG_empleados_sueldo as @sueldo>0 and @sueldo<= 5000;
 */
 
 
@@ -606,6 +656,10 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_columns tabla -> Nos muestra el detalle de la estructura de la tabla
 	exec sp_tables BD -> 
 	exec sp_helpconstraint tabla -> Para saber si una restriccion esta habilitada o no
+	exec sp_bindrule NOMBREREGLA, 'TABLA.CAMPO' - > Luego de crear la regla, debemos asociarla a un campo ejecutando un procedimiento almacenado del sistema empleando
+		exec sp_bindrule RG_sueldo_intervalo, 'empleados.sueldo'
+	exec sp_help tabla -> Podemos ver todos los objetos de la base de datos activa, incluyendo las reglas
+	
 
 
 */
