@@ -568,6 +568,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		SQL Server NO controla los datos existentes para confirmar que cumplen con la regla como lo hace al aplicar restricciones
 		Si no los cumple, la regla se asocia igualmente; pero al ejecutar una instruccion "insert" o "update" muestra un mensaje de error
 		Actua en inserciones y actualizaciones.
+	Podemos dejar un comentario para identificar que hace una regla, al ponerlo con "--" antes de ejecutar create
 
 	Sintaxis basica es la siguiente:
 		sintaxis: create rule NOMBREREGLA as @VARIABLE CONDICION
@@ -618,6 +619,77 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			DECIMAL - Creamos una regla para restringir los valores que se pueden ingresar en un campo "sueldo":
 				create rule RG_empleados_sueldo as @sueldo>0 and @sueldo<= 5000;
 					exec sp_bindrule RG_empleados_sueldo, 'empleados.sueldo';
+	
+	Para eliminar una regla, primero se debe deshacer la asociacion, ejecutando el procedimiento almacenado del sistema "sp_unbindrule":
+		sintaxis: exec sp_unbindrule 'TABLA.CAMPO'
+	No es posible eliminar una regla si esta asociada a un campo. Si intentamos hacerlo, aparece un mensaje de error y la eliminacion no se realiza
+	Con la instruccion "drop rule" eliminamos la regla:
+		sintaxis: drop rule NOMBREREGLA
+
+	Quitamos la asociacion de la regla "RG_sueldo_intervalo" con el campo "sueldo" de la tabla "empleados" tipeando:	
+		ejem: exec sp_unbindrule 'empleados.sueldo';
+	Luego de quitar la asociacion la eliminamos:
+		ejem drop rule RG_sueldo_100a1000;
+	
+
+	Podemos utilizar el procedimiento almacenado "sp_help" con el nombre del objeto del cual queremos informacion, en este caso el nombre de una regla:
+		sintaxis: exec sp_help NOMBREREGLA;
+
+		sintaxis: exec sp_helpconstraint NOMBRETABLA;
+			- constraint_type: indica que es una regla con "RULE", nombrando el campo al que esta asociada
+			- constraint_name: nombre de la regla
+			- constraint_keys: muestra el texto de la regla
+	
+	select * from sysobjects -> Nos muestra el nombre y varios datos de todos los objetos de la base de datos actual. La columna "xtype" indica el tipo de objeto, en caso de ser una regla aparece el valor "R"
+	select * from sysobjects where xtype='R' and-- tipo regla name like 'RG%';--busqueda con comodin
+
+	Para ver el texto de una regla empleamos el procedimiento almacenado "sp_helptext" seguido del nombre de la regla:
+		sintaxis: exec sp_helptext NOMBREREGLA;
+
+---------------------------- 3. VALORES PREDETERMINADOS (CREATE DEFAULT) --------------
+
+	Los valores predeterminados se asocian con uno o varios campos (o tipos de datos definidos por el usuario) Se definen una sola vez y se pueden usar muchas veces
+		sintaxis: create default NOMBREVALORPREDETERMINADO as VALORPREDETERMINADO;
+
+		"VALORPREDETERMINADO" no puede hacer referencia a campos de una tabla (u otros objetos) y debe ser compatible con el tipo de datos y longitud del campo al cual se asocia
+		Si esto no sucede, SQL Server no lo informa al crear el valor predeterminado ni al asociarlo, pero al ejecutar una instruccion "insert" muestra un mensaje de error.
+		En el siguiente ejemplo creamos un valor predeterminado llamado "VP_datodesconocido' con el valor "Desconocido"
+			ejem: create default VP_datodesconocido as 'Desconocido'
+
+			Luego de crear un valor predeterminado, debemos asociarlo a un campo (o a un tipo de datos definido por el usuario) ejecutando el procedimiento almacenado: 
+				sintaxis:  exec sp_bindefault NOMBRE, 'NOMBRETABLA.CAMPO';
+				ejem: create default VP_datodesconocido as 'Desconocido' -> creamos un valor predeterminado llamado "VP_datodesconocido' con el valor "Desconocido"
+				ejem: exec sp_bindefault VP_datodesconocido, 'empleados.domicilio'; -> Asocia el valor predeterminado creado anteriormente al campo "domicilio" de la tabla "empleado"
+
+			Podemos asociar un valor predeterminado a varios campos. Asociamos el valor predeterminado "VP_datodesconocido" al campo "barrio" de la tabla "empleados":
+				ejem: exec sp_bindefault VP_datodesconocido, 'empleados.barrio';
+		
+		La funcion que cumple un valor predeterminado es basicamente la misma que una restriccion "default"
+		Las siguientes caracteristicas explican algunas semejanzas y diferencias entre ellas:
+			- un campo solamente puede tener definida UNA restriccion "default", un campo solamente puede tener UN valor predeterminado asociado a el
+			- una restriccion "default" se almacena con la tabla, cuando esta se elimina, las restricciones tamben. 
+				Los valores predeterminados son objetos diferentes e independientes de las tablas, si eliminamos una tabla, las asociaciones desaparecen, 
+				pero los valores predeterminados siguen existiendo en la base de datos
+			- una restriccion "default" se establece para un solo campo; un valor predeterminado puede asociarse a distintos campos (inclusive, de diferentes tablas)
+			- No se puede asociar un valor predeterminado a un campo que tiene una restriccion "default"
+
+			Veamos otros ejemplos.
+				Creamos un valor predeterminado que inserta el valor "0" en un campo de tipo numerico
+					ejem: create default VP_cero as 0
+				En el siguiente creamos un valor predeterminado que inserta ceros con el formato valido para un numero de telefono:
+					ejem: create default VP_telefono as '(0000)0-000000';
+		
+		Para deshacer una asociacion empleamos el procedimiento almacenado "sp_unbindefault" seguido de la tabla y campo al que esta asociado:
+			sintaxis: exec sp_unbindefault 'TABLA.CAMPO';
+			
+				Quitamos la asociacion al campo "sueldo" de la tabla "empleados"
+					ejem: exec sp_unbindefault 'empleados.sueldo'
+				
+			Con la instruccion "drop default" podemos eliminar un valor predeterminado
+				sintaxis: drop default NOMBREVALORPREDETERMINADO
+				
+				Eliminamos el valor predeterminado llamado "VP_cero"
+					ejem: drop default VP_cero;
 */
 
 
@@ -662,11 +734,20 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_helpconstraint tabla -> Junto al nombre de la tabla, nos muestra informacion acerca de las restricciones de dicha tabla
 	exec sp_columns tabla -> Nos muestra el detalle de la estructura de la tabla
 	exec sp_tables BD -> 
-	exec sp_helpconstraint tabla -> Para saber si una restriccion esta habilitada o no
+	exec sp_helpconstraint -> Podemos ver todos los objetos de la base de datos
+	exec sp_helpconstraint tabla -> Para saber si una restriccion esta habilitada o no de una tabla
 	exec sp_bindrule NOMBREREGLA, 'TABLA.CAMPO' - > Luego de crear la regla, debemos asociarla a un campo ejecutando un procedimiento almacenado del sistema empleando
 		exec sp_bindrule RG_sueldo_intervalo, 'empleados.sueldo'
-	exec sp_help tabla -> Podemos ver todos los objetos de la base de datos activa, incluyendo las reglas
-	
+	exec sp_help -> Podemos ver todos los objetos de la base de datos activa, incluyendo las reglas
+	exec sp_help NOMBREREGLA -> Podemos utilizar el procedimiento almacenado "sp_help" con el nombre del objeto del cual queremos informacion
+	exec sp_unbindrule 'TABLA.CAMPO' -> Quitamos la asociacion de la regla "RG_sueldo_intervalo" con el campo "sueldo" de la tabla "empleados" tipeando:	
+		exec sp_unbindrule 'empleados.sueldo'
+	select * from sysobjects -> Nos muestra el nombre y varios datos de todos los objetos de la base de datos actual. La columna "xtype" indica el tipo de objeto, en caso de ser una regla aparece el valor "R"
+	select * from sysobjects where xtype='R' and-- tipo regla name like 'RG%';--busqueda con comodin
 
-
+	exec sp_helptext NOMBREREGLA -> Para ver el texto de una regla empleamos el procedimiento almacenado "sp_helptext" seguido del nombre de la regla
+	exec sp_bindefault NOMBRE, 'NOMBRETABLA.CAMPO' -> Luego de crear un valor predeterminado, debemos asociarlo a un campo (o a un tipo de datos definido por el usuario)
+		exec sp_bindefault VP_datodesconocido, 'empleados.domicilio'
+	exec sp_unbindefault 'TABLA.CAMPO' ->  Para deshacer una asociacion
+		exec sp_unbindefault 'empleados.domicilio';
 */
