@@ -598,19 +598,26 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			nombre varchar(30),
 			seccion varchar(20),
 			fechaingreso datetime,
+			fechanacimiento datetime,
 			hijos tinyint,
 			sueldo decimal(6,2)
 		);
 			VARCHAR - Creamos una regla que establezca un patron para el documento:
 				create rule RG_documento_patron as @documento like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+					exec sp_bindrule RG_documento_patron, 'empleados.documento';
 			VARCHAR - Creamos una regla para restringir los valores que se pueden ingresar en un campo "seccion":
 				create rule RG_empleados_seccion as @seccion in ('Secretaria','Contaduria','Sistemas','Gerencia');
+					exec sp_bindrule RG_empleados_seccion, 'empleados.seccion';
 			DATETIME - Creamos una regla para restringir los valores que se pueden ingresar en el campo "fechaingreso", para que no sea posterior a la fecha actual:
 				create rule RG_empleados_fechaingreso as @fecha <= getdate();
+					exec sp_bindrule RG_empleados_fechaingreso, 'empleados.fechaingreso';
+					exec sp_bindrule RG_empleados_fechaingreso, 'empleados.fechanacimiento';
 			INT - Creamos una regla para restringir los valores que se pueden ingresar en el campo "hijos":
 				create rule RG_hijos as @hijos between 0 and 20;
+					exec sp_bindrule RG_hijos, 'empleados.hijos';
 			DECIMAL - Creamos una regla para restringir los valores que se pueden ingresar en un campo "sueldo":
 				create rule RG_empleados_sueldo as @sueldo>0 and @sueldo<= 5000;
+					exec sp_bindrule RG_empleados_sueldo, 'empleados.sueldo';
 */
 
 
