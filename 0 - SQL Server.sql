@@ -872,8 +872,85 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				En la consulta anterior aparecen filas duplicadas, para evitarlo debemos emplear un "where": 
 					ejem2: select c1.nombre as 'plato principal',c2.nombre as postre,c1.precio+c2.precio as total from comidas as c1 join comidas as c2
 						where c1.rubro='plato' and c2.rubro='postre';
-*/
 
+--------------- 7. COMBINACIONES CON UPDATE Y DELETE
+		Las combinaciones no solo se utilizan con la sentencia "select", tambien podemos emplearlas con "update" y "delete"
+		En el siguiente ejemplo aumentamos en un 10% los precios de los libros de cierta editorial, 
+		necesitamos un "join" para localizar los registros de la editorial "Planeta" en la tabla "libros"
+			ejem: update libros set precio=precio+(precio*0.1) from libros  join editoriales as e on codigoeditorial=e.codigo where nombre='Planeta';
+		
+
+		Eliminamos todos los libros de editorial "Emece":
+			ejem: delete libros from libros join editoriales on codigoeditorial = editoriales.codigo where editoriales.nombre='Emece';
+*/
+/*------------------------------------------ RESTRICCION - LLAVES/CLAVES FORANEAS (FOREIGN KEY) ------------------------------------------
+	Un campo que no es clave primaria en una tabla y sirve para enlazar sus valores con otra tabla en la cual es clave primaria se denomina clave foranea, externa o ajena
+	Con la restriccion "foreign key" se define un campo (o varios) cuyos valores coinciden con la clave primaria de la misma tabla o de otra
+
+	La siguiente es la sintaxis parcial general para agregar una restriccion "foreign key" 
+		sintaxis: alter table NOMBRETABLA1 add constraint NOMBRERESTRICCION foreign key (CAMPOCLAVEFORANEA) references NOMBRETABLA2 (CAMPOCLAVEPRIMARIA);
+	
+		Para agregar una restriccion "foreign key" al campo "codigoeditorial" de "libros", tipeamos
+			ejem: alter table libros add constraint FK_libros_codigoeditorial foreign key (codigoeditorial) references editoriales(codigo)
+
+	Una restriccion "foreign key" no puede modificarse, debe eliminarse y volverse a crear
+	
+
+--------------- 1. RESTRICCION FOREIGN KEY (MISMA TABLA)
+		Un ejemplo en el cual definimos esta restriccion dentro de la misma tabla
+			Una mutual almacena los datos de sus afiliados en una tabla llamada "afiliados"
+			Algunos afiliados inscriben a sus familiares. La tabla contiene un campo que hace referencia al afiliado que lo incorporo a la mutual, del cual dependen
+
+				La estructura de la tabla es la siguiente:	
+					create table afiliados(
+						numero int identity not null,
+						documento char(8) not null,
+						nombre varchar(30),
+						afiliadotitular int,
+						primary key (documento),
+						unique (numero)
+					);
+			En caso que un afiliado no haya sido incorporado a la mutual por otro afiliado, el campo "afiliadotitular" almacenara "null"
+			Establecemos una restriccion "foreign key" para asegurarnos que el numero de afiliado que se ingrese en el campo "afiliadotitular" exista en la tabla "afiliados"
+				ejem: alter table afiliados add constraint FK_afiliados_afiliadotitular foreign key (afiliadotitular) references afiliados (numero)
+
+--------------- 2. RESTRICCION FOREIGN KEY (ACCIONES)
+		Si intentamos eliminar un registro de la tabla referenciada por una restriccion "foreign key" cuyo valor de clave primaria existe referenciada 
+		en la tabla que tiene dicha restriccion, la accion no se ejecuta y aparece un mensaje de error
+		La restriccion "foreign key" tiene las clausulas "on delete" y "on update" que son opcionales
+			Las opciones para estas clausulas son las siguientes
+				- "no action": indica que si intentamos eliminar o actualizar un valor de la clave primaria de la tabla referenciada (TABLA2) 
+						que tengan referencia en la tabla principal (TABLA1), se genere un error y la accion no se realiza
+				- "cascade": indica que si eliminamos o actualizamos un valor de la clave primaria en la tabla referenciada (TABLA2), 
+						los registros coincidentes en la tabla principal (TABLA1), tambien se eliminen o modifiquen
+						Es decir, si eliminamos o modificamos un valor de campo definido con una restriccion "primary key" o "unique", 
+						dicho cambio se extiende al valor de clave externa de la otra tabla
+		
+		La sintaxis completa para agregar esta restriccion a una tabla es la siguiente
+			sintaxis: alter table TABLA1 add constraint NOMBRERESTRICCION 
+						foreign key (CAMPOCLAVEFORANEA) references TABLA2(CAMPOCLAVEPRIMARIA) on delete OPCION on update OPCION;
+		
+		Al agregar una foreign key:
+			- no se especifica accion para eliminaciones (o se especifica "no action"), y se intenta eliminar un registro de la tabla referenciada (editoriales) 
+				cuyo valor de clave primaria (codigo) existe en la tabla principal (libros), la accion no se realiza
+			- se especifica "cascade" para eliminaciones ("on delete cascade") y se elimina un registro de la tabla referenciada (editoriales) 
+				cuyo valor de clave primaria (codigo) existe en la tabla principal(libros), la eliminacion de la tabla referenciada (editoriales) 
+				se realiza y se eliminan de la tabla principal (libros) todos los registros cuyo valor coincide con el registro eliminado de la tabla referenciada (editoriales)
+			- no se especifica accion para actualizaciones (o se especifica "no action"), y se intenta modificar un valor de clave primaria (codigo) 
+				de la tabla referenciada (editoriales) que existe en el campo clave foranea (codigoeditorial) de la tabla principal (libros), la accion no se realiza
+			- se especifica "cascade" para actualizaciones ("on update cascade") y se modifica un valor de clave primaria (codigo) de la tabla referenciada (editoriales) 
+				que existe en la tabla principal (libros), SQL Server actualiza el registro de la tabla referenciada (editoriales) y todos los registros coincidentes en la tabla principal (libros)
+		
+		Veamos un ejemplo. Definimos una restriccion "foreign key" a la tabla "libros" estableciendo el campo "codigoeditorial" como clave foranea 
+		que referencia al campo "codigo" de la tabla "editoriales". La tabla "editoriales" tiene como clave primaria el campo "codigo"
+			Especificamos la accion en cascada para las actualizaciones y eliminaciones
+				ejem: alter table libros add constraint FK_libros_codigoeditorial foreign key (codigoeditorial) references editoriales(codigo) on update cascade on delete cascade
+			
+			Si luego de establecer la restriccion anterior, eliminamos una editorial de "editoriales" de las cuales hay libros, 
+			se elimina dicha editorial y todos los libros de tal editorial. Y si modificamos el valor de codigo de una editorial de "editoriales", 
+			se modifica en "editoriales" y todos los valores iguales de "codigoeditorial" de libros tambien se modifican
+
+*/
 
 
 
