@@ -1196,13 +1196,101 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	Las subconsultas se emplean cuando una consulta es muy compleja, entonces se la divide en varios pasos logicos y se obtiene el resultado con una unica instruccion 
 	y cuando la consulta depende de los resultados de otra consulta
 	Las subconsultas se DEBEN incluir entre parentesis
+	Puede haber subconsultas dentro de subconsultas, se admiten hasta 32 niveles de anidacion
+
+		Hay tres tipos basicos de subconsultas:
+			- las que retornan un solo valor escalar que se utiliza con un operador de comparacion o en lugar de una expresion
+			- las que retornan una lista de valores, se combinan con "in", o los operadores "any", "some" y "all"
+			- los que testean la existencia con "exists"
+		
+		Reglas a tener en cuenta al emplear subconsultas:
+		- la lista de seleccion de una subconsulta que va luego de un operador de comparacion puede incluir solo una expresion o campo (excepto si se emplea "exists" y "in")
+		- si el "where" de la consulta exterior incluye un campo, este debe ser compatible con el campo en la lista de seleccion de la subconsulta
+		- no se pueden emplear subconsultas que recuperen campos de tipos text o image
+		- las subconsultas luego de un operador de comparacion (que no es seguido por "any" o "all") no pueden incluir clausulas "group by" ni "having"
+		- "distinct" no puede usarse con subconsultas que incluyan "group by"
+		- no pueden emplearse las clausulas "compute" y "compute by"
+		- "order by" puede emplearse solamente si se especifica "top" tambien
+		- una vista creada con una subconsulta no puede actualizarse
+		- una subconsulta puede estar anidada dentro del "where" o "having" de una consulta externa o dentro de otra subconsulta
+		- si una tabla se nombra solamente en un subconsulta y no en la consulta externa, los campos no seran incluidos en la salida 
+			(en la lista de seleccion de la consulta externa)
 
 
---------------- 1.
+--------------- 1. SUBCONSULTAS COMO EXPRESION
+		Una subconsulta puede reemplazar una expresion. Dicha subconsulta debe devolver un valor escalar (o una lista de valores de un campo)
+		Las subconsultas que retornan un solo valor escalar se utiliza con un operador de comparacion o en lugar de una expresion
+			sintaxis1: select CAMPOS from TABLA where CAMPO OPERADOR (SUBCONSULTA)
+			sintaxis2: select CAMPO OPERADOR (SUBCONSULTA) from TABLA
 
+			Si queremos saber el precio de un determinado libro y la diferencia con el precio del libro mas costoso, 
+			anteriormente debiamos averiguar en una consulta el precio del libro mas costoso y luego, en otra consulta, 
+			calcular la diferencia con el valor del libro que solicitamos. Podemos conseguirlo en una sola sentencia combinando dos consultas
+				ejem: select titulo,precio, precio-(select max(precio) from libros) as diferencia from libros where titulo='Uno'
 
-*/
+			Queremos saber el titulo, autor y precio del libro mas costoso
+				ejem: select titulo,autor, precio from libros where precio = (select max(precio) from libros)
 
+		Se pueden emplear en "select", "insert", "update" y "delete"
+		Para actualizar un registro empleando subconsulta la sintaxis basica es la siguiente
+			sintaxis: update TABLA set CAMPO=NUEVOVALOR where CAMPO= (SUBCONSULTA)
+		
+		Para eliminar registros empleando subconsulta empleamos la siguiente sintaxis basica
+			sintaxis: delete from TABLA where CAMPO=(SUBCONSULTA)
+
+--------------- 2. SUBCONSULTAS CON IN
+		Vimos que una subconsulta puede reemplazar una expresion. Dicha subconsulta debe devolver un valor escalar o una lista de valores de un campo
+		Las subconsultas que retornan una lista de valores reemplazan a una expresion en una clausula "where" que contiene la palabra clave "in"
+		El resultado de una subconsulta con "in" (o "not in") es una lista. Luego que la subconsulta retorna resultados, la consulta exterior los usa
+			La sintaxis basica es la siguiente:
+			sintaxis: ...where EXPRESION in (SUBCONSULTA)
+
+			Este ejemplo muestra los nombres de las editoriales que ha publicado libros de un determinado autor
+				ejem: select nombre from editoriales where codigo in (select codigoeditorial from libros where autor='Richard Bach')
+			
+			Podemos reemplazar por un "join" la consulta anterior
+				ejem: select distinct nombre from editoriales as e join libros on codigoeditorial=e.codigo where autor='Richard Bach'
+
+--------------- 3. SUBCONSULTAS CON ANY/SOME - ALL
+		"any" y "some" son sinonimos. Chequean si alguna fila de la lista resultado de una subconsulta se encuentra el valor especificado en la condicion
+		El tipo de datos que se comparan deben ser compatibles
+		La sintaxis basica es
+			sintaxis: ...VALORESCALAR OPERADORDECOMPARACION ANY (SUBCONSULTA)
+		
+			Queremos saber los titulos de los libros de "Borges" que pertenecen a editoriales que han publicado tambien libros de "Richard Bach", 
+			es decir, si los libros de "Borges" coinciden con ALGUNA de las editoriales que publico libros de "Richard Bach"
+				ejem: select titulo from libros where autor='Borges' and codigoeditorial = any 
+					(select e.codigo from editoriales as e join libros as l on codigoeditorial=e.codigo where l.autor='Richard Bach')
+			
+					La consulta interna (subconsulta) retorna una lista de valores de un solo campo luego, 
+					la consulta externa compara cada valor de "codigoeditorial" con cada valor de la lista devolviendo los titulos de "Borges" que coinciden
+			
+			"all" tambien compara un valor escalar con una serie de valores.
+			Chequea si TODOS los valores de la lista de la consulta externa se encuentran en la lista de valores devuelta por la consulta interna sintaxis
+				sintaxis: VALORESCALAR OPERADORDECOMPARACION all (SUBCONSULTA)
+
+				Veamos otro ejemplo con un operador de comparacion diferente
+				Queremos saber si ALGUN precio de los libros de "Borges" es mayor a ALGUN precio de los libros de "Richard Bach"
+					ejem: select titulo,precio from libros where autor='Borges' and precio > any (select precio from libros where autor='Bach')
+				
+				Veamos la diferencia si empleamos "all" en lugar de "any"
+					ejem: select titulo,precio from libros where autor='borges' and precio > all (select precio from libros where autor='bach')
+					El precio de cada libro de "Borges" es comparado con cada valor de la lista de valores retornada por la subconsulta
+					Si cumple la condicion, es decir, si es mayor a TODOS los precios de "Richard Bach" (o al mayor), se lista
+
+--------------- 4. SUBCONSULTAS CORRELACIONADAS
+		Un almacen almacena la informacion de sus ventas en una tabla llamada "facturas" en la cual guarda el numero de factura, la fecha y el nombre del cliente 
+		y una tabla denominada "detalles" en la cual se almacenan los distintos items correspondientes a cada factura: el nombre del articulo, el precio  y la cantidad
+		Se necesita una lista de todas las facturas que incluya el numero, la fecha, el cliente, la cantidad de articulos comprados y el total
+			ejem: select f.*, (select count(d.numeroitem) from Detalles as d where f.numero=d.numerofactura) as cantidad,
+					(select sum(d.preciounitario*cantidad) from Detalles as d where f.numero=d.numerofactura) as total from facturas as f
+				
+				El segundo "select" retorna una lista de valores de una sola columna con la cantidad de items por factura (el numero de factura lo toma del "select" exterior)
+				El tercer "select" retorna una lista de valores de una sola columna con el total por factura (el numero de factura lo toma del "select" exterior)
+				El primer "select" (externo) devuelve todos los datos de cada factura
+
+		A este tipo de subconsulta se la denomina consulta correlacionada. 
+		La consulta interna se evalua tantas veces como registros tiene la consulta externa, se realiza la subconsulta para cada registro de la consulta externa
 
 
 
