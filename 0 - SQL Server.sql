@@ -1126,6 +1126,40 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				
 		Los campos de los cuales depende el campo calculado no pueden eliminarse, se debe eliminar primero el campo calculado
 
+--------------- 5.1 TIPO DE DATOS DEFINIDOS POR EL USUARIO (CREAR - INFORMACION)
+		Cuando definimos un campo de una tabla debemos especificar el tipo de datos
+		Se pueden crear y eliminar tipos de datos definidos por el usuario
+		Se emplean cuando varias tablas deben almacenar el mismo tipo de datos en un campo y se quiere garantizar que todas tengan el mismo tipo y longitud
+		Para darle un nombre a un tipo de dato definido por el usuario debe considerar las mismas reglas que para cualquier identificador
+		No puede haber dos objetos con igual nombre en la misma base de datos
+
+		Para crear un tipo de datos definido por el usuario se emplea el procedimiento almacenado del sistema "sp_addtype". Sintaxis basica
+			sintaxis: exec sp_addtype NOMBRENUEVOTIPO, 'TIPODEDATODELSISTEMA', 'OPCIONNULL'
+		
+			Creamos un tipo de datos definido por el usuario llamado "tipo_documento" que admite valores nulos
+				exec sp_addtype tipo_documento, 'char(8)', 'null'
+
+--------------- 5.2 TIPO DE DATOS DEFINIDOS POR EL USUARIO (ASOCIACION DE REGLAS)
+		Se puede asociar una regla a un tipo de datos definido por el usuario. Luego de crear la regla se establece la asociacion
+		La sintaxis es la siguiente
+			sintaxis: exec sp_bindrule NOMBREREGLA, 'TIPODEDATODEFINIDOPORELUSUARIO', 'futureonly'
+			El parametro "futureonly" es opcional, especifica que si existen campos (de cualquier tabla) con este tipo de dato, no se asocien a la regla
+
+			SQL Server NO controla los datos existentes para confirmar que cumplen con la regla, si no los cumple, la regla se asocia igualmente
+			Pero al ejecutar una instruccion "insert" o "update" muestra un mensaje de error
+			Si asocia una regla a un tipo de dato definido por el usuario que tiene otra regla asociada, esta ultima la reemplaza
+
+			Para quitar la asociacion, empleamos el mismo procedimiento almacenado que aprendimos cuando quitamos asociaciones a campos, 
+			ejecutamos el procedimiento almacenado "sp_unbindrule" seguido del nombre del tipo de dato al que esta asociada la regla
+				ejm: exec sp_unbindrule 'TIPODEDATODEFINIDOPORELUSUARIO'
+		
+		Si asocia una regla a un campo cuyo tipo de dato definido por el usuario ya tiene una regla asociada, la nueva regla se aplica al campo, 
+		pero el tipo de dato continua asociado a la regla. La regla asociada al campo prevalece sobre la asociada al tipo de dato
+		Por ejemplo, tenemos un campo "precio" de un tipo de dato definido por el usuario "tipo_precio", este tipo de dato tiene asociada 
+		una regla "RG_precio0a99" (precio entre 0 y 99), luego asociamos al campo "precio" la regla "RG_precio100a500" (precio entre 100 y 500)
+		Al ejecutar una instruccion "insert" admitira valores entre 100 y 500, es decir, tendra en cuenta la regla asociada al campo, 
+		aunque vaya contra la regla asociada al tipo de dato
+
 */
 
 
@@ -1186,6 +1220,10 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_unbindefault 'TABLA.CAMPO' ->  Para deshacer una asociacion
 		exec sp_unbindefault 'empleados.domicilio'
 	exec sp_help NOMBREVALORPREDETERMINADO
-	ejem: exec sp_helpindex libros -> Para ver los indices de una tabla:
+		ejem: exec sp_helpindex libros -> Para ver los indices de una tabla:
 		
+	exec sp_addtype NOMBRENUEVOTIPO, 'TIPODEDATODELSISTEMA', 'OPCIONNULL'
+		ejem: exec sp_addtype tipo_documento, 'char(8)', 'null';
+	exec sp_droptype NOMBRENUEVOTIPO
+		ejem: exec sp_droptype tipo_documento;
 */
