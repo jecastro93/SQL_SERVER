@@ -882,7 +882,35 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 
 		Eliminamos todos los libros de editorial "Emece":
 			ejem: delete libros from libros join editoriales on codigoeditorial = editoriales.codigo where editoriales.nombre='Emece';
+
+--------------- 7. COMBINACIONES (UNION - UNION ALL)
+	El operador "union" combina el resultado de dos o mas instrucciones "select" en un unico resultado
+	Se usa cuando los datos que se quieren obtener pertenecen a distintas tablas y no se puede acceder a ellos con una sola consulta
+	No se incluyen las filas duplicadas en el resultado, a menos que coloque la opcion "all"
+	Puede dividir una consulta compleja en varias consultas "select" y luego emplear el operador "union" para combinarlas
+
+		Una academia de ensenanza almacena los datos de los alumnos en una tabla llamada "alumnos" y los datos de los profesores en otra denominada "profesores"
+		La academia necesita el nombre y domicilio de profesores y alumnos para enviarles una tarjeta de invitacion
+		Para obtener los datos necesarios de ambas tablas en una sola consulta necesitamos realizar una union
+			ejem1: select nombre, domicilio from alumnos
+					union
+				select nombre, domicilio from profesores
+			
+		Para obtener los datos de los datos duplicados entre alumons y profesores
+			ejem2: select nombre, domicilio from alumnos
+					union all
+				select nombre, domicilio from profesores;
+		
+		Agregar una columna extra a la consulta con el encabezado "condicion" en la que aparezca el literal "profesor" o "alumno" segun si la persona es uno u otro
+			ejem3: select nombre, domicilio, 'alumno' as condicion from alumnos
+					union
+				select nombre, domicilio,'profesor' from profesores
+					order by condicion;
+
 */
+
+
+
 /*------------------------------------------ RESTRICCION - LLAVES/CLAVES FORANEAS (FOREIGN KEY) ------------------------------------------
 	Un campo que no es clave primaria en una tabla y sirve para enlazar sus valores con otra tabla en la cual es clave primaria se denomina clave foranea, externa o ajena
 	Con la restriccion "foreign key" se define un campo (o varios) cuyos valores coinciden con la clave primaria de la misma tabla o de otra
@@ -950,6 +978,127 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			se elimina dicha editorial y todos los libros de tal editorial. Y si modificamos el valor de codigo de una editorial de "editoriales", 
 			se modifica en "editoriales" y todos los valores iguales de "codigoeditorial" de libros tambien se modifican
 
+--------------- 3. RESTRICCION FOREIGN KEY (DESHABILITAR Y ELIMINAR)
+		Se pueden deshabilitar las restricciones "check" y "foreign key", a las demas se las debe eliminas
+		La sintaxis basica al agregar la restricccion "foreign key" es la siguiente
+			sintaxis: alter table NOMBRETABLA1 with OPCIONDECHEQUEO add constraint NOMBRECONSTRAINT foreign key (CAMPOCLAVEFORANEA)
+					 references NOMBRETABLA2 (CAMPOCLAVEPRIMARIA) on update OPCION on delete OPCION
+
+			La opcion "with OPCIONDECHEQUEO" especifica si se controlan los datos existentes o no con "check" y "nocheck" respectivamente
+			Por defecto, si no se especifica, la opcion es "check"
+
+		En el siguiente ejemplo agregamos una restriccion "foreign key" que controla que todos los codigos de editorial tengan un codigo valido, es decir, 
+		Dicho codigo exista en "editoriales". La restriccion no se aplica en los datos existentes pero si en los siguientes ingresos, modificaciones y actualizaciones
+			ejem: alter table libros with nocheck add constraint FK_libros_codigoeditorial foreing key (codigoeditorial) references editoriales(codigo)
+
+		La comprobacion de restricciones se puede deshabilitar para modificar, eliminar o agregar datos a una tabla sin comprobar la restriccion
+			La sintaxis general es
+				sintaxis: alter table NOMBRETABLA OPCIONDECHEQUEO constraint NOMBRERESTRICCION
+			
+				En el siguiente ejemplo deshabilitamos la restriccion creada anteriormente
+					ejem: alter table libros nocheck constraint FK_libros_codigoeditorial
+				
+				Para habilitar una restriccion deshabilitada se ejecuta la misma instruccion pero con la clausula "check" o "check all"
+					ejem: alter table libros check constraint FK_libros_codigoeditorial
+		
+		Entonces, las clausulas "check" y "nocheck" permiten habilitar o deshabilitar restricciones "foreign key" (y "check")
+		Pueden emplearse para evitar la comprobacion de datos existentes al crear la restriccion o para deshabilitar la comprobacion de datos al ingresar, 
+		actualizar y eliminar algun registro que infrinja la restriccion
+
+		Podemos eliminar una restriccion "foreign key" con "alter table"
+		La sintaxis basica es la misma que para cualquier otra restriccion
+			sintaxis: alter table TABLA drop constraint NOMBRERESTRICCION
+
+			Eliminamos la restriccion de "libros"
+				ejem: alter table libros drop constraint FK_libros_codigoeditorial
+
+--------------- 4. RESTRICCION FOREIGN KEY (AL CREAR TABLA)
+		Hasta el momento hemos agregado restricciones a tablas existentes con "alter table" (manera aconsejada), 
+		tambien pueden establecerse al momento de crear una tabla (en la instruccion "create table")
+
+		En el siguiente ejemplo creamos la tabla "libros" con varias restricciones:
+
+			create table libros(
+				codigo int identity,
+				titulo varchar(40),
+				codigoautor int not null,
+				codigoeditorial tinyint not null,
+				precio decimal(5,2)
+				constraint DF_precio default (0),
+				constraint PK_libros_codigo
+				primary key clustered (codigo),
+				constraint UQ_libros_tituloautor
+					unique (titulo,codigoautor),
+				constraint FK_libros_editorial
+				foreign key (codigoeditorial)
+				references editoriales(codigo)
+				on update cascade,
+				constraint FK_libros_autores
+				foreign key (codigoautor)
+				references autores(codigo)
+				on update cascade,
+				constraint CK_precio_positivo check (precio>=0)
+			);
+		
+		En el ejemplo anterior creamos:
+
+			- una restriccion "default" para el campo "precio" (restriccion a nivel de campo);
+			- una restriccion "primary key" con indice agrupado para el campo "codigo" (a nivel de tabla);
+			- una restriccion "unique" con indice no agrupado (por defecto) para los campos "titulo" y "codigoautor" (a nivel de tabla);
+			- una restriccion "foreign key" para establecer el campo "codigoeditorial" como clave externa que haga referencia al campo "codigo" de "editoriales 
+					y permita actualizaciones en cascada y no eliminaciones (por defecto "no action");
+			- una restriccion "foreign key" para establecer el campo "codigoautor" como clave externa que haga referencia al campo "codigo" de "autores" y 
+					permita actualizaciones en cascada y no eliminaciones;
+			- una restriccion "check" para el campo "precio" que no admita valores negativos
+*/
+
+/*------------------------------------------ MODIFICACION TABLAS ------------------------------------------
+--------------- 1. AGREGAR Y ELIMINAR CAMPOS (ALTER TABLE - ADD - DROP)
+		"ALTER TABLE" permite modificar la estructura de una tabla
+		Podemos utilizarla para agregar, modificar y eliminar campos de una tabla
+
+		Para agregar un nuevo campo a una tabla empleamos la siguiente sintaxis basica:
+			sintaxis: alter table NOMBRETABLA add NOMBRENUEVOCAMPO DEFINICION
+		
+			En el siguiente ejemplo agregamos el campo "cantidad" a la tabla "libros", de tipo tinyint, que acepta valores nulos
+				ejem: alter table libros add cantidad tinyint
+							
+			SQL Server no permite agregar campos "not null" a menos que se especifique un valor por defecto
+				ejem: alter table libros add autor varchar(20) not null default 'Desconocido'
+		
+		Para eliminar campos de una tabla la sintaxis basica es la siguiente:
+			sintaxis: alter table NOMBRETABLA drop column NOMBRECAMPO
+
+				En el siguiente ejemplo eliminamos el campo "precio" de la tabla "libros"
+					ejem: alter table libros drop column precio
+				
+				Podemos eliminar varios campos en una sola sentencia
+					ejem: alter table libros drop column editorial,edicion
+
+--------------- 2. MODIFICAR CAMPOS
+		Hemos visto que "alter table" permite modificar la estructura de una tabla. Tambien podemos utilizarla para modificar campos de una tabla
+		La sintaxis basica para modificar un campo existente es la siguiente
+			sintaxis: alter table NOMBRETABLA alter column CAMPO NUEVADEFINICION
+
+			Modificamos el campo "titulo" extendiendo su longitud y para que NO admita valores nulos
+				ejem: alter table libros alter column titulo varchar(40) not null
+			
+			En el siguiente ejemplo alteramos el campo "precio" de la tabla "libros" que fue definido "decimal(6,2) not null" para que acepte valores nulos
+				ejem: alter table libros alter column precio decimal(6,2) null
+
+--------------- 3. AGREGAR CAMPOS Y RESTRICCIONES
+		Podemos agregar un campo a una tabla y en el mismo momento aplicarle una restriccion
+		Para agregar un campo y establecer una restriccion, la sintaxis basica es la siguiente
+			sintaxis: alter table TABLA add CAMPO DEFINICION constraint NOMBRERESTRICCION TIPO
+
+			Agregamos a la tabla "libros", el campo "titulo" de tipo varchar(30) y una restriccion "unique" con indice agrupado
+				ejem: alter table libros add titulo varchar(30) constraint UQ_libros_autor unique clustered
+
+			Agregamos a la tabla "libros", el campo "codigo" de tipo int identity not null y una restriccion "primary key" con indice no agrupado
+				ejem: alter table libros add codigo int identity not null constraint PK_libros_codigo primary key nonclustered
+			
+			Agregamos a la tabla "libros", el campo "precio" de tipo decimal(6,2) y una restriccion "check"
+				ejem: alter table libros add precio decimal(6,2) constraint CK_libros_precio check (precio>=0)
 */
 
 
