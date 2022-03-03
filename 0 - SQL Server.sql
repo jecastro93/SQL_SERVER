@@ -1099,6 +1099,33 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			
 			Agregamos a la tabla "libros", el campo "precio" de tipo decimal(6,2) y una restriccion "check"
 				ejem: alter table libros add precio decimal(6,2) constraint CK_libros_precio check (precio>=0)
+
+--------------- 4. CAMPOS CALCULADOS
+		Un campo calculado es un campo que no se almacena fisicamente en la tabla
+		SQL Server emplea una formula que detalla el usuario al definir dicho campo para calcular el valor segun otros campos de la misma tabla
+			Un campo calculado no puede
+				- definirse como "not null"
+				- ser una subconsulta
+				- tener restriccion "default" o "foreign key"
+				- insertarse ni actualizarse
+			
+			Creamos un campo calculado denominado "sueldototal" que suma al sueldo basico de cada empleado la cantidad abonada por los hijos (100 por cada hijo)
+				ejem create table empleados(
+						documento char(8),
+						nombre varchar(10),
+						domicilio varchar(30),
+						sueldobasico decimal(6,2),
+						cantidadhijos tinyint default 0,
+						sueldototal as sueldobasico + (cantidadhijos*100)
+					)
+			
+			Tambien se puede agregar un campo calculado a una tabla existente
+				sintaxis: alter table NOMBRETABLA add NOMBRECAMPOCALCULADO as EXPRESION
+				
+				ejem: alter table empleados add sueldototal as sueldo+(cantidadhijos*100)
+				
+		Los campos de los cuales depende el campo calculado no pueden eliminarse, se debe eliminar primero el campo calculado
+
 */
 
 
