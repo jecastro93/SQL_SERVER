@@ -1160,8 +1160,48 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		Al ejecutar una instruccion "insert" admitira valores entre 100 y 500, es decir, tendra en cuenta la regla asociada al campo, 
 		aunque vaya contra la regla asociada al tipo de dato
 
+--------------- 5.3 TIPO DE DATOS DEFINIDOS POR EL USUARIO (VALORES PREDETERMINADOS)
+		Se puede asociar un valor predeterminado a un tipo de datos definido por el usuario
+		Luego de crear un valor predeterminado, se puede asociar a un tipo de dato definido por el usuario con la siguiente sintaxis
+			sintaxis: exec sp_bindefault NOMBREVALORPREDETERMINADO, 'TIPODEDATODEFINIDOPORELUSUARIO','futureonly'
+		
+			El parametro "futureonly" es opcional, especifica que si existen campos (de cualquier tabla) con este tipo de dato, no se asocien al valor predeterminado
+			Si no se especifica este parametro, todos los campos de este tipo de dato, existentes o que se creen posteriormente (de cualquier tabla), quedan asociados al valor predeterminado
+		
+		Si asocia un valor predeterminado a un tipo de dato definido por el usuario que tiene otro valor predeterminado asociado, el ultimo lo reemplaza
+		Para quitar la asociacion, empleamos el mismo procedimiento almacenado que aprendimos cuando quitamos asociaciones a campos
+			sintaxis: sp_unbindefault 'TIPODEDATODEFINIDOPORELUSUARIO'	
+		
+		Un tipo de dato definido por el usuario puede tener un solo valor predeterminado asociado	
+
+--------------- 5.3 TIPO DE DATOS DEFINIDOS POR EL USUARIO (ELIMINAR)
+		Podemos eliminar un tipo de dato definido por el usuario con el procedimiento almacenado "sp_droptype"
+			sintaxis: exec sp_droptype TIPODEDATODEFINIDOPORELUSUARIO
+			
+			Eliminamos el tipo de datos definido por el usuario llamado "tipo_documento"
+				ejem: exec sp_droptype tipo_documento
+		
+		Los tipos de datos definidos por el usuario se almacenan en la tabla del sistema "systypes"
+		Podemos averiguar si un tipo de dato definido por el usuario existe para luego eliminarlo
+			if exists (select *from systypes where name = 'NOMBRETIPODEDATODEFINIDOPORELUSUARIO')
+				exec sp_droptype TIPODEDATODEFINIDOPORELUSUARIO
+		
+		Consultamos la tabla "systypes" para ver si existe el tipo de dato "tipo_documento", si es asi, lo eliminamos
+			if exists (select *from systypes where name = 'tipo_documento')
+				exec sp_droptype tipo_documento
 */
 
+/*------------------------------------------ SUBCONSULTAS (SUBQUERY) ------------------------------------------
+	Una subconsulta (subquery) es una sentencia "select" anidada en otra sentencia "select", "insert", "update" o "delete" (o en otra subconsulta)
+	Las subconsultas se emplean cuando una consulta es muy compleja, entonces se la divide en varios pasos logicos y se obtiene el resultado con una unica instruccion 
+	y cuando la consulta depende de los resultados de otra consulta
+	Las subconsultas se DEBEN incluir entre parentesis
+
+
+--------------- 1.
+
+
+*/
 
 
 
@@ -1226,4 +1266,5 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		ejem: exec sp_addtype tipo_documento, 'char(8)', 'null';
 	exec sp_droptype NOMBRENUEVOTIPO
 		ejem: exec sp_droptype tipo_documento;
+	select name from systypes -> almacena informacion de todos los tipos de datos
 */
