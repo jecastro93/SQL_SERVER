@@ -1387,7 +1387,53 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				
 */
 /*------------------------------------------ VISTAS (VIEWS) ------------------------------------------
+		Una vista es una alternativa para mostrar datos de varias tablas. Una vista es como una tabla virtual que almacena una consulta
+		Los datos accesibles a traves de la vista no estan almacenados en la base de datos como un objeto
+		Podemos crear vistas con: 
+			- un subconjunto de registros y campos de una tabla
+			- una union de varias tablas
+			- una combinacion de varias tablas
+			- un resumen estadistico de una tabla
+			- un subconjunto de otra vista
+			- una combinacion de vistas y tablas
+
+		Entonces, una vista almacena una consulta como un objeto para utilizarse posteriormente
+		Las tablas consultadas en una vista se llaman tablas base. En general, se puede dar un nombre a cualquier consulta y almacenarla como una vista
+		Una vista suele llamarse tambien tabla virtual porque los resultados que retorna y la manera de referenciarlas es la misma que para una tabla
+
+		Las vistas permiten
+			- ocultar informacion: permitiendo el acceso a algunos datos y manteniendo oculto el resto de la informacion que no se incluye en la vista
+					El usuario opera con los datos de una vista como si se tratara de una tabla, pudiendo modificar tales datos
+			- simplificar la administracion de los permisos de usuario: se pueden dar al usuario permisos para que solamente pueda acceder a los datos a traves de vistas, 
+					en lugar de concederle permisos para acceder a ciertos campos, asi se protegen las tablas base de cambios en su estructura
+			- mejorar el rendimiento: se puede evitar tipear instrucciones repetidamente almacenando en una vista el resultado de una consulta 
+					compleja que incluya informacion de varias tablas
 		
+		Una vista se define usando un "select"
+		La sintaxis basica parcial para crear una vista es la siguiente
+			sintaxis1: create view NOMBREVISTA as SENTENCIASSELECT from TABLA
+
+			En el siguiente ejemplo creamos la vista "vista_empleados", que es resultado de una combinacion en la cual se muestran 4 campos
+				ejem: create view vista_empleados as 
+						select (apellido+' '+e.nombre) as nombre,sexo, s.nombre as seccion, cantidadhijos
+						from empleados as e join secciones as s on codigo=seccion
+			
+		Otra sintaxis es la siguiente
+			sintaxis2: create view NOMBREVISTA (NOMBRESDEENCABEZADOS) as SENTENCIASSELECT from TABLA
+		
+			Creamos otra vista de "empleados" denominada "vista_empleados_ingreso" que almacena la cantidad de empleados por anio
+				ejem: create view vista_empleados_ingreso (fecha,cantidad) as select datepart(year,fechaingreso),count(*) from empleados group by datepart(year,fechaingreso)
+			
+		La diferencia es que se colocan entre parentesis los encabezados de las columnas que apareceran en la vista
+		Si no los colocamos y empleamos la sintaxis vista anteriormente, se emplean los nombres de los campos o alias colocados en el "select" que define la vista
+
+		Existen algunas restricciones para el uso de "create view", a saber
+			- no puede incluir las clausulas "compute" ni "compute by" ni la palabra clave "into"
+			- no se pueden crear vistas temporales ni crear vistas sobre tablas temporales
+			- no se pueden asociar reglas ni valores por defecto a las vistas
+			- no puede combinarse con otras instrucciones en un mismo lote
+		
+		Se pueden construir vistas sobre otras vistas
 
 --------------- 1. 
 
