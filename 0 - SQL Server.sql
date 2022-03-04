@@ -1,4 +1,5 @@
 
+/*https://www.tutorialesprogramacionya.com/sqlserverya/
 /*------------------------------------------ TIPOS DE DATOS ------------------------------------------
 -------------- 1. TEXTO --------------
 	VARCHAR(X) -> Permite caracteres de 1 a 8000
@@ -58,6 +59,9 @@ create table peliculas(
 );
 
 -- Sirve para dividir el lote de sentencias
+/*"go" es un signo de finalizacion de un lote de sentencias SQL. No es una sentencia, es un comando.
+El lote de sentencias esta compuesto por todas las sentencias antes de "go" o todas las sentencias entre dos "go"*/
+
 GO
 
 -- SP_COLUMNS -> Procedimiento almacenado para ver el detalle de las tablas
@@ -1357,11 +1361,40 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 			Eliminamos todos los libros de las editoriales que tiene publicados libros de "Juan Perez"
 				delete from libros where codigoeditorial in (select e.codigo from editoriales as e join libros on codigoeditorial=e.codigo where autor='Juan Perez')
 
+--------------- 9. SUBCONSULTAS	INSERT
+		Podemos ingresar registros en una tabla empleando un "select"
+		La sintaxis basica es la siguiente
+			sintaxis: insert into TABLAENQUESEINGRESA (CAMPOSTABLA1) select (CAMPOSTABLACONSULTADA) from TABLACONSULTADA
+
+		Un profesor almacena las notas de sus alumnos en una tabla llamada "alumnos"
+		Tiene otra tabla llamada "aprobados", con algunos campos iguales a la tabla "alumnos" pero en ella solamente almacenara los alumnos que han aprobado el ciclo
+			Ingresamos registros en la tabla "aprobados" seleccionando registros de la tabla "alumnos"
+				ejem: insert into aprobados (documento,nota) select (documento,nota) from alumnos
+			
+		La cantidad de columnas devueltas en la consulta debe ser la misma que la cantidad de campos a cargar en el "insert"
+
+--------------- 10. SUBCONSULTAS CREAR TABLA A PARTIR DE OTRA(CREATE TABLE) 
+		Podemos crear una tabla e insertar datos en ella en una sola sentencia consultando otra tabla (o varias) con esta sintaxis
+			sintaxis: select CAMPOSNUEVATABLA into NUEVATABLA from TABLA where CONDICION
+		
+		Es decir, se crea una nueva tabla y se inserta en ella el resultado de una consulta a otra tabla
+			Tenemos la tabla "libros" de una libreria y queremos crear una tabla llamada "editoriales" que contenga los nombres de las editoriales
+			La tabla "editoriales", que no existe, contendra solamente un campo llamado "nombre". La tabla libros contiene varios registros
+			Podemos crear la tabla "editoriales" con el campo "nombre" consultando la tabla "libros" y en el mismo momento insertar la informacion
+				ejem: select distinct editorial as nombre into editoriales from libros
+				
+				La tabla "editoriales" se ha creado con el campo "nombre" seleccionado del campo "editorial" de "libros"
+				
+*/
+/*------------------------------------------ VISTAS (VIEWS) ------------------------------------------
 		
 
+--------------- 1. 
 
 
 */
+
+
 
 
 
