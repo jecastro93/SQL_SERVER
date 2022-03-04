@@ -1289,30 +1289,79 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				El tercer "select" retorna una lista de valores de una sola columna con el total por factura (el numero de factura lo toma del "select" exterior)
 				El primer "select" (externo) devuelve todos los datos de cada factura
 
-		A este tipo de subconsulta se la denomina consulta correlacionada. 
+		A este tipo de subconsulta se la denomina consulta correlacionada
 		La consulta interna se evalua tantas veces como registros tiene la consulta externa, se realiza la subconsulta para cada registro de la consulta externa
 
+--------------- 5. SUBCONSULTAS EXISTS y NOT EXISTS
+		Los operadores "exists" y "not exists" se emplean para determinar si hay o no datos en una lista de valores
+		Estos operadores pueden emplearse con subconsultas correlacionadas para restringir el resultado de una consulta exterior a los registros que 
+		cumplen la subconsulta (consulta interior). Estos operadores retornan "true" (si las subconsultas retornan registros) o 
+		"false" (si las subconsultas no retornan registros)
+		Cuando se coloca en una subconsulta el operador "exists", SQL Server analiza si hay datos que coinciden con la subconsulta, 
+		no se devuelve ningun registro, es como un test de existencia
+		SQL Server termina la recuperacion de registros cuando por lo menos un registro cumple la condicion "where" de la subconsulta
+			La sintaxis basica es la siguiente
+				sintaxis: ... where exists (SUBCONSULTA)
+
+				En este ejemplo se usa una subconsulta correlacionada con un operador "exists" en la clausula "where" 
+				para devolver una lista de clientes que compraron el articulo "lapiz"
+					ejem: select cliente,numero from facturas as f where exists (select * from Detalles as d where f.numero=d.numerofactura and d.articulo='lapiz')
+
+--------------- 6. SUBCONSULTAS SIMIL AUTOCOMBINACION
+		Algunas sentencias en las cuales la consulta interna y la externa emplean la misma tabla pueden reemplazarse por una autocombinacion
+			Por ejemplo, queremos una lista de los libros que han sido publicados por distintas editoriales
+				ejem: select distinct l1.titulo from libros as l1 where l1.titulo in (select l2.titulo from libros as l2 where l1.editorial <> l2.editorial)
+
+			En el ejemplo anterior empleamos una subconsulta correlacionada y las consultas interna y externa emplean la misma tabla
+			La subconsulta devuelve una lista de valores por ello se emplea "in" y sustituye una expresion en una clausula "where"
+			Con el siguiente "join" se obtiene el mismo resultado
+				ejem: select distinct l1.titulo from libros as l1 join libros as l2 on l1.titulo=l2.titulo and l1.autor=l2.autor where l1.editorial<>l2.editorial
+
+			Otro ejemplo: Buscamos todos los libros que tienen el mismo precio que "El aleph" empleando subconsulta
+				ejem: select titulo from libros where titulo<>'El aleph' and precio = (select precio from libros where titulo='El aleph')
+				La subconsulta retorna un solo valor
+			
+			Buscamos los libros cuyo precio supere el precio promedio de los libros por editorial
+				ejem: select l1.titulo,l1.editorial,l1.precio from libros as l1 where l1.precio > (select avg(l2.precio) from libros as l2 where l1.editorial= l2.editorial)
+				Por cada valor de l1, se evalua la subconsulta, si el precio es mayor que el promedio
+			
+--------------- 7. SUBCONSULTAS EN LUGAR DE UNA TABLA (TABLA DERIVADA)
+		Se pueden emplear subconsultas que retornen un conjunto de registros de varios campos en lugar de una tabla
+		Se la denomina tabla derivada y se coloca en la clausula "from" para que la use un "select" externo
+		La tabla derivada debe ir entre parantesis y tener un alias para poder referenciarla. La sintaxis basica es la siguiente
+			sintaxis: select ALIASdeTABLADERIVADA.CAMPO from (TABLADERIVADA) as ALIAS
+
+		La tabla derivada es una subsonsulta
+			Podemos probar la consulta que retorna la tabla derivada y luego agregar el "select" externo	
+			ejem: select f.*, (select sum(d.precio*cantidad) from Detalles as d where f.numero=d.numerofactura) as total from facturas as f
+
+			La consulta anterior contiene una subconsulta correlacionada. Retorna todos los datos de "facturas" y el monto total por factura de "detalles"
+			
+			Esta consulta retorna varios registros y varios campos y sera la tabla derivada que emplearemos en la siguiente consulta
+				ejem: select td.numero,c.nombre,td.total from clientes as c join (select f.*, (select sum(d.precio*cantidad) 
+				from Detalles as d where f.numero=d.numerofactura) as total from facturas as f) as td on td.codigocliente=c.codigo
+				
+				La consulta anterior retorna, de la tabla derivada (referenciada con "td") el numero de factura y el monto total, y de la tabla "clientes", 
+				el nombre del cliente. Note que este "join" no emplea 2 tablas, sino una tabla propiamente dicha y una tabla derivada, que es en realidad una subconsulta
+
+--------------- 8. SUBCONSULTAS UPDATE - DELETE
+		La sintaxis basica para realizar actualizaciones con subconsulta es la siguiente
+			sintaxis: update TABLA set CAMPO=NUEVOVALOR where CAMPO= (SUBCONSULTA)
+			
+			Actualizamos el precio de todos los libros de editorial "Emece"
+				ejem: update libros set precio=precio+(precio*0.1) where codigoeditorial=(select codigo from editoriales where nombre='Emece')
+		
+		La sintaxis basica para realizar eliminaciones con subconsulta es la siguiente
+			sintaxis: delete from TABLA where CAMPO in (SUBCONSULTA)
+			
+			Eliminamos todos los libros de las editoriales que tiene publicados libros de "Juan Perez"
+				delete from libros where codigoeditorial in (select e.codigo from editoriales as e join libros on codigoeditorial=e.codigo where autor='Juan Perez')
+
+		
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 
 
