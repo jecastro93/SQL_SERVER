@@ -1478,7 +1478,46 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 					update vista_empleados set nombre='Ana2' where nombre='Marcos'; -- NO LO PERMITIRA ACTUALIZAR DADO QUE NO ES DE ADMIN
 					update vista_empleados set nombre='Edinson' where nombre='jhon'; -- LO ACTUALIZA
 
+--------------- 5. VISTAS MODIFICAR TABLAS ATRAVES DE VISTAS
+		Si se modifican los datos de una vista, se modifica la tabla base
+		Se puede insertar, actualizar o eliminar datos de una tabla a traves de una vista, 
+		Teniendo en cuenta lo siguiente, las modificaciones que se realizan a las vistas:
+			- no pueden afectar a mas de una tabla consultada. 
+			- pueden modificarse datos de una vista que combina varias tablas pero la modificacion solamente debe afectar a una sola tabla
+			- no se pueden cambiar los campos resultado de un calculo
+			- pueden generar errores si afectan a campos a las que la vista no hace referencia
+				Por ejemplo, si se ingresa un registro en una vista que consulta una tabla que tiene campos not null que no estan incluidos en la vista
+			- la opcion "with check option" obliga a todas las instrucciones de modificacion que se ejecutan en la vista a cumplir ciertos criterios que se especifican al definir la vista
+			- para eliminar datos de una vista solamente UNA tabla puede ser listada en el "from" de la definicion de la misma
+
+--------------- 6. VISTAS MODIFICAR (ALTER VIEW)
+		Para modificar una vista puede eliminarla y volver a crearla o emplear "alter view"
+		Con "alter view" se modifica la definicion de una vista sin afectar los procedimientos almacenados y los permisos
+		Si elimina una vista y vuelve a crearla, debe reasignar los permisos asociados a ella
+		
+		Sintaxis basica para alterar una vista	
+			sintaxis: alter view NOMBREVISTA with encryption--opcional as SELECT
+
+			En el ejemplo siguiente se altera vista_empleados para agregar el campo "domicilio"
+				ejem: alter view vista_empleados with encryption as select (apellido+' '+e.nombre) as nombre,sexo, s.nombre as seccion, 
+					cantidadhijos,domicilio from empleados as e join secciones as s on codigo=seccion
 */
+
+/*------------------------------------------ LENGUAJE DE CONTROL DE FLUJO (CASE - IF) ------------------------------------------
+--------------- 1. CASE
+		La sentencia "case" compara 2 o mas valores y devuelve un resultado
+		La sintaxis es la siguiente
+			sintaxis: case VALORACOMPARAR 
+						when VALOR1 then RESULTADO1 
+						when VALOR2 then RESULTADO2  ...
+						else RESULTADO3
+					end
+*/
+
+
+
+
+
 
 
 
