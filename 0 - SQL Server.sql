@@ -1435,7 +1435,13 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		
 		Se pueden construir vistas sobre otras vistas
 
---------------- 1. 
+--------------- 1. VISTAS (VIEWS) INFORMACION / CREAR VISTAS 
+
+		A partir del object explorer podemos administrar las vistas creadas (modificarlas, borrarlas, renombrarlas etc.)
+		El SQL Server Management Studio incluye una herramienta visual para crear vistas mediante la seleccion de tablas y campos, 
+		debemos presionar el boton derecho del mouse sobre "View" y seleccionar "New View..."		
+		
+		https://www.tutorialesprogramacionya.com/sqlserverya/temarios/descripcion.php?inicio=100&cod=110&punto=104
 
 
 */
