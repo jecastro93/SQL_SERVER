@@ -1387,7 +1387,8 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 				
 */
 /*------------------------------------------ VISTAS (VIEWS) ------------------------------------------
-		Una vista es una alternativa para mostrar datos de varias tablas. Una vista es como una tabla virtual que almacena una consulta
+		AL MODIFICAR LOS DATOS DE UNA VISTA SE MODIFICAN LOS DATOS DE UNA TABLA
+		Una vista es una alternativa para mostrar datos de varias tablas. Una vista es como una tabla virtual que almacena una consulta	
 		Los datos accesibles a traves de la vista no estan almacenados en la base de datos como un objeto
 		Podemos crear vistas con: 
 			- un subconjunto de registros y campos de una tabla
@@ -1443,6 +1444,39 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 		
 		https://www.tutorialesprogramacionya.com/sqlserverya/temarios/descripcion.php?inicio=100&cod=110&punto=104
 
+--------------- 2. VISTAS ENCRIPTAR (WITH ENCRYPTION)
+		Podemos ver el texto que define una vista ejecutando el procedimiento almacenado del sistema "sp_helptext" seguido del nombre de la vista
+			exec sp_helptext NOMBREVISTA
+		
+		Podemos ocultar el texto que define una vista empleando la siguiente sintaxis al crearla
+			sintaxis: create view NOMBREVISTA with encryption as SENTENCIASSELECT from TABLA
+		
+		"with encryption" indica a SQL Server que codifique las sentencias que definen la vista
+			Creamos una vista con su definicion oculta
+				ejem: create view vista_empleados with encryption as select (apellido+' '+e.nombre) as nombre,sexo,
+						s.nombre as seccion, cantidadhijos from empleados as e join secciones as s on codigo=seccion
+
+--------------- 3. VISTAS ELIMINAR 
+		Para quitar una vista se emplea "drop view"
+			sintaxis: drop view NOMBREVISTA
+		Si se elimina una tabla a la que hace referencia una vista, la vista no se elimina, hay que eliminarla explicitamente
+		Solo el propietario puede eliminar una vista
+
+		Antes de eliminar un objeto, se recomienda ejecutar el procedimiento almacenado de sistema "sp_depends" para averiguar si hay objetos que hagan referencia a el
+			Eliminamos la vista denominada "vista_empleados"
+				ejem: drop view vista_empleados
+
+--------------- 4. VISTAS CON RESTRICCION (WITH CHECK OPTION)
+		Es posible obligar a todas las instrucciones de modificacion de datos que se ejecutan en una vista a cumplir ciertos criterios
+			Por ejemplo, creamos la siguiente vista
+				ejem: create view vista_empleados as select apellido, e.nombre, sexo, s.nombre as seccion 
+					from empleados as e join secciones as s on seccion=codigo where s.nombre='Administracion' with check option
+
+				La vista definida anteriormente muestra solamente algunos de los datos de los empleados de la seccion "Administracion"
+				Ademas, solamente se permiten modificaciones a los empleados de esa seccion
+				Podemos actualizar el nombre, apellido y sexo a traves de la vista, pero no el campo "seccion" porque esta restringuido
+					update vista_empleados set nombre='Ana2' where nombre='Marcos'; -- NO LO PERMITIRA ACTUALIZAR DADO QUE NO ES DE ADMIN
+					update vista_empleados set nombre='Edinson' where nombre='jhon'; -- LO ACTUALIZA
 
 */
 
@@ -1489,4 +1523,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 	exec sp_droptype NOMBRENUEVOTIPO
 		ejem: exec sp_droptype tipo_documento;
 	select name from systypes -> almacena informacion de todos los tipos de datos
+
+	exec sp_depends VISTA -> Aparecen las tablas (y demas objetos) de las cuales depende la vista, es decir, las tablas referenciadas en la misma
+	exec sp_helptext VISTA -> Podemos ver la sentencia que se utilizo para crear la vista
 */
