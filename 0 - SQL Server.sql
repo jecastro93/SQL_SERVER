@@ -1503,7 +1503,7 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 					cantidadhijos,domicilio from empleados as e join secciones as s on codigo=seccion
 */
 
-/*------------------------------------------ LENGUAJE DE CONTROL DE FLUJO (CASE - IF) ------------------------------------------
+/*------------------------------------------ LENGUAJE DE CONTROL DE FLUJO (CASE - IF - IFF) ------------------------------------------
 --------------- 1. CASE
 		La sentencia "case" compara 2 o mas valores y devuelve un resultado
 		La sintaxis es la siguiente
@@ -1512,6 +1512,60 @@ SQL Server ofrece varios tipos de funciones para realizar distintas operaciones.
 						when VALOR2 then RESULTADO2  ...
 						else RESULTADO3
 					end
+			
+		Por cada valor hay un "when" y un "then"
+		Si encuentra un valor coincidente en algun "when" ejecuta el "then" correspondiente a ese "when", si no encuentra ninguna coincidencia, se ejecuta el "else"
+		Si no hay parte "else" retorna "null"
+		Finalmente se coloca "end" para indicar que el "case" ha finalizado
+
+			Esta es la sentencia
+			ejem: select nombre,nota, resultado=
+					case nota when 0 then 'libre'
+						when 1 then 'libre'
+						when 2 then 'libre'
+						when 3 then 'libre'
+						when 4 then 'regular'
+						when 5 then 'regular'
+						when 6 then 'regular'
+						when 7 then 'promocionado'
+						when 8 then 'promocionado'
+						when 9 then 'promocionado'
+						when 10 then 'promocionado'
+					end from alumnos
+		
+		Tambien se pueden utilizar operadores en la sentencia
+			select nombre, nota, condicion=
+					case when nota<4 then 'libre'
+						when nota >=4 and nota<7 then 'regular'
+						when nota>=7 then 'promocionado' 
+						else 'sin nota' 
+					end from alumnos
+--------------- 2. IIF (BEGIN - END - GOTO - IF - ELSE - RETURN - WAITFOR - WHILE - BREAK - CONTINUE)
+		Existen palabras especiales que pertenecen al lenguaje de control de flujo que controlan la ejecucion de las sentencias, 
+		los bloques de sentencias y procedimientos almacenados
+		Tales palabras son: begin... end, goto, if... else, return, waitfor, while, break y continue
+			- "begin... end" -> encierran un bloque de sentencias para que sean tratados como unidad
+			- "if... else" -> testean una condicion
+							Se emplean cuando un bloque de sentencias debe ser ejecutado si una condicion se cumple y si no se cumple, 
+							se debe ejecutar otro bloque de sentencias diferente
+			- "while": ejecuta repetidamente una instruccion siempre que la condicion sea verdadera
+			- "break" y "continue": controlan la operacion de las instrucciones incluidas en el bucle "while"
+		
+			Veamos un ejemplo. Tenemos nuestra tabla "libros"
+			Queremos mostrar todos los titulos de los cuales no hay libros disponibles (cantidad=0), si no hay, mostrar un mensaje indicando tal situacion
+				ejem: if exists (select * from libros where cantidad=0) (select titulo from libros where cantidad=0) else select 'No hay libros sin stock'
+			
+		Podemos emplear "if...else" en actualizaciones
+			Por ejemplo, queremos hacer un descuento en el precio, del 10% a todos los libros de una determinada editorial; si no hay, mostrar un mensaje
+				ejem: if exists (select * from libros where editorial='Emece')
+						begin
+							update libros set precio=precio-(precio*0.1) where editorial='Emece'
+							select 'libros actualizados'
+						end else
+						select 'no hay registros actualizados'
+		
+		A partir de la version 2012 de SQL Server disponemos de la funcion integrada iif
+			ejem: select titulo,costo=iif(precio<38,'barato','caro') from libros
 */
 
 
